@@ -12,7 +12,7 @@
 		</view>
 		<view class="index_content">
 			<view class="pancha_block">
-				<view class="pancha_left">
+				<view class="pancha_left" @click="routerAdd('人员')">
 					<view class="img_block">
 						<image src="../../static/renyuan.png" mode="widthFix"></image>
 					</view>
@@ -20,9 +20,9 @@
 						<text class="jiahao">+</text> <text class="wenzi">人员核查</text>
 					</view>
 				</view>
-				<view class="pancha_right">
+				<view class="pancha_right" @click="routerNav('人员')">
 					<view class="history_num">
-						12
+						{{personNum}}
 					</view>
 					<view class="history_text">
 						人员核查历史
@@ -30,7 +30,7 @@
 				</view>
 			</view>
 			<view class="pancha_block cheliang">
-				<view class="pancha_left">
+				<view class="pancha_left" @click="routerAdd('车辆')">
 					<view class="img_block">
 						<image src="../../static/che.png" mode="widthFix"></image>
 					</view>
@@ -38,9 +38,9 @@
 						<text class="jiahao">+</text> <text class="wenzi">车辆核查</text>
 					</view>
 				</view>
-				<view class="pancha_right">
+				<view class="pancha_right" @click="routerNav('车辆')">
 					<view class="history_num">
-						12
+						{{carNum}}
 					</view>
 					<view class="history_text">
 						车辆核查历史
@@ -49,11 +49,11 @@
 			</view>
 			<view class="point_block">
 				<image src="../../static/weizhi.png" mode="widthFix"></image>
-				火车站卡口
+				{{blckle}}
 			</view>
 		</view>
 		<!-- 抽屉 -->
-		<uni-drawer ref="drawer" width="80%">
+		<uni-drawer ref="drawer">
 			<view style="padding:32rpx;" class="drawer_container">
 				<view class="drawer_userinfo_block">
 					<view class="left_name">
@@ -70,30 +70,141 @@
 				</view>
 				<view class="opertion_list">
 					<uni-list>
-						<uni-list-item title="卡口设置" thumb="../../static/weizhi.png" thumb-size="lg" rightText="火车站卡口"></uni-list-item>
-						<uni-list-item title="修改密码" thumb="../../static/mima.png" thumb-size="lg"></uni-list-item>
-						<uni-list-item title="清除缓存" thumb="../../static/qingchu.png" thumb-size="lg"></uni-list-item>
-						<uni-list-item title="检查版本" thumb="../../static/gengxin.png" thumb-size="lg" rightText="v1.0.0.1"></uni-list-item>
+						<uni-list-item clickable @click="setBuckle" title="卡口设置" thumb="../../static/weizhi.png" link thumb-size="sm"
+						 :rightText="blckle?blckle:''"></uni-list-item>
+						<!-- <uni-list-item title="修改密码" thumb="../../static/mima.png" link thumb-size="sm"></uni-list-item> -->
+						<uni-list-item clickable @click="resetData" title="清除缓存" thumb="../../static/qingchu.png" link thumb-size="sm"></uni-list-item>
+						<uni-list-item title="检查版本" thumb="../../static/gengxin.png" link thumb-size="sm" rightText="v1.0.0.1"></uni-list-item>
 					</uni-list>
 				</view>
 				<view class="ogOut_block">
-					<button type="default">退出登录</button>
+					<button type="default" @click="routerLogin">退出登录</button>
 				</view>
 			</view>
 		</uni-drawer>
+		<uni-popup id="popupDialog" ref="popupDialog" type="dialog">
+			<uni-popup-dialog :type="msgType" title="" content="此操作不会保存当前数据,是否继续?" :before-close="true" @confirm="dialogConfirm"
+			 @close="dialogClose" :reset="'否'" :submit="'是'"></uni-popup-dialog>
+		</uni-popup>
+		<uni-popup id="popupLogout" ref="popupLogout" type="dialog">
+			<uni-popup-dialog :type="msgType" title="" content="是否要退出系统?" :before-close="true" @confirm="dialogLogout" @close="dialogClose"
+			 :reset="'否'" :submit="'是'"></uni-popup-dialog>
+		</uni-popup>
 	</view>
 </template>
 
 <script>
+	import uniPopupDialog from '../../components/uni-popup/uni-popup-dialog.vue';
+	import {
+		oneLine
+	} from '../../utils';
+	var db = require('../../common/db.js')
 	export default {
 		data() {
 			return {
-
+				msgType: 'warn',
+				personNum: 0,
+				carNum: 0,
+				blckle: ''
 			}
 		},
+		components: {
+			uniPopupDialog
+		},
+		onShow() {
+			console.log(plus.device.imei)
+			db.openDB('data')
+			db.SelectData(this, 'person', oneLine `
+				select count(1) as count  from collectDataTable where dataType=15 and date(createdAt) =  date('now')
+			`,
+				true)
+			db.SelectData(this, 'car', oneLine `
+				select count(1) as count from collectDataTable where dataType=16 and date(createdAt) =  date('now')
+			`,
+				true)
+			db.closeDB('data')
+		},
+		onLoad(option) {
+			var _this = this
+			uni.getStorage({
+				key: 'buckle',
+				success: function(res) {
+					console.log('res', res)
+					_this.blckle = res.data
+				}
+			});
+			this.blckle = option.type
+			// this.$request('/getUseDept', {}, "POST").then(res => {
+			// 	// 打印调用成功回调
+			// 	console.log(res)
+			// })
+		},
 		methods: {
+			dialogClose(done) {
+				done()
+			},
+			dialogLogout(done) {
+				uni.navigateTo({
+					url: '/pages/login/index'
+				})
+				done()
+			},
+			dialogConfirm(done) {
+				// this.$refs.popupMessage.open()
+				// console.log('点击确认');
+				// 需要执行 done 才能关闭对话框
+				done()
+				uni.showLoading({
+					title: '清除数据中'
+				})
+				db.openDB('data')
+				db.deleteTable('collectDataTable')
+				db.SelectData(this, 'person', oneLine `
+					select count(1) as count  from collectDataTable where dataType=15 and date(createdAt) =  date('now')
+				`,
+					true)
+				db.SelectData(this, 'car', oneLine `
+					select count(1) as count from collectDataTable where dataType=16 and date(createdAt) =  date('now')
+				`,
+					true)
+				db.closeDB('data')
+				uni.clearStorage()
+				this.blckle = ''
+				uni.hideLoading()
+			},
+			// 退出登录
+			routerLogin() {
+				this.$refs.drawer.close()
+				this.$refs.popupLogout.open()
+			},
+			resetData() {
+				this.$refs.drawer.close()
+				this.$refs.popupDialog.open()
+			},
+			setBuckle() {
+				uni.navigateTo({
+					url: `/pages/buckle/buckle?type=${this.blckle}`
+				})
+			},
 			handleClick() {
 				this.$refs.drawer.open();
+			},
+			routerNav(type) {
+				uni.navigateTo({
+					url: `/pages/personList/index?type=${type}`
+				});
+			},
+			routerAdd(type) {
+				if(uni.getStorageSync('buckle')==''){
+					uni.showToast({
+						title:'请先选择卡点',
+						icon:'none'
+					})
+					return 
+				}
+				uni.navigateTo({
+					url: `/pages/personCheck/index?type=${type}`
+				});
 			}
 		}
 	}
@@ -130,9 +241,11 @@
 
 	.touxiang image {
 		width: 15%;
+		height: 0;
+		height: auto;
 		position: absolute;
-		top: 30rpx;
-		left: 20rpx;
+		top: 60rpx;
+		left: 30rpx;
 	}
 
 	.pancha_block {
@@ -166,6 +279,8 @@
 
 	.pancha_left .img_block image {
 		width: 120rpx;
+		height: 0;
+		height: auto;
 	}
 
 	.pancha_left .text_block {
@@ -260,16 +375,19 @@
 
 	.drawer_userinfo_block .right_touxiang image {
 		width: 100%;
+		height: 0;
+		height: auto;
 	}
 
 	/deep/ .uni-drawer__content {
-		width: 80%;
+		width: 75% !important;
 	}
 
 	/deep/ .uni-list-item {
 		padding-left: 0;
 	}
-	.ogOut_block{
+
+	.ogOut_block {
 		position: absolute;
 		bottom: 0;
 		left: 0;
@@ -278,14 +396,16 @@
 		width: 100%;
 		margin-bottom: 10%;
 	}
-	.ogOut_block button{
+
+	.ogOut_block button {
 		width: 80%;
 		background: #fff;
-		border:2rpx solid #11A7D3;
+		border: 2rpx solid #11A7D3;
 		color: #11A7D3;
 		border-radius: 60rpx;
 	}
-	uni-button:after{
+
+	uni-button:after {
 		border: none;
 	}
 </style>

@@ -1,20 +1,43 @@
 {
 	"pages": [{
+		"path": "pages/login/index",
+		"style": {
+			"navigationStyle": "custom"
+		}
+	}, {
 		"path": "pages/index/index",
 		"style": {
 			"app-plus": {
 				"titleNView": false
 			}
 		}
-	},{
+	}, {
+		"path": "pages/personList/index",
+		"style": {
+			"app-plus": {
+				"titleNView": false
+			}
+		}
+	}, {
 		"path": "pages/personCheck/index",
 		"style": {
-			"navigationBarTitleText":"人员核查"
+			"navigationStyle": "custom"
+			// "navigationBarTitleText": "人员核查"
+		}
+	}, {
+		"path": "pages/buckle/buckle",
+		"style": {
+			"navigationStyle": "custom"
+		}
+	}, {
+		"path": "pages/onlineCheck/onlineCheck",
+		"style": {
+			"navigationBarTitleText": "在线核查"
 		}
 	}],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "维稳核查",
 		"navigationBarBackgroundColor": "#45AFDF",
 		"backgroundColor": "#FFFFFF"
 	}

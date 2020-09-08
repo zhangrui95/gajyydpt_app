@@ -9,10 +9,10 @@
 		</view>
 		<view class="uni-dialog-button-group">
 			<view class="uni-dialog-button" @click="close">
-				<text class="uni-dialog-button-text">取消</text>
+				<text class="uni-dialog-button-text">{{reset}}</text>
 			</view>
 			<view class="uni-dialog-button uni-border-left" @click="onOk">
-				<text class="uni-dialog-button-text uni-button-color">确定</text>
+				<text class="uni-dialog-button-text uni-button-color">{{submit}}</text>
 			</view>
 		</view>
 
@@ -76,6 +76,16 @@
 			 * 对话框内容
 			 */
 			content: {
+				type: String,
+				default: ''
+			},
+			// cl自定义内容
+				
+			reset: {
+				type: String,
+				default: ''
+			},
+			submit: {
 				type: String,
 				default: ''
 			},

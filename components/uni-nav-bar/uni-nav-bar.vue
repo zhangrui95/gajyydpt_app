@@ -133,7 +133,8 @@
 		font-size: 34rpx;
 		/* #endif */
 		/* #ifndef APP-PLUS */
-		font-size: 16;
+		font-size: 32rpx;
+		font-weight: 700;
 		/* #endif */
 	}
 
