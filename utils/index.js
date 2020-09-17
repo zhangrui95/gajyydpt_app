@@ -2,6 +2,14 @@
 export const getUserToken = () => {
 	// return sessionStorage.getItem('userToken') || '123123';
 };
+export const getCredential = () => {
+	let appCredential = appCredential ? JSON.parse(uni.getStorageSync('appCredential')).credential : ''
+	let userCredential = userCredential ? JSON.parse(uni.getStorageSync('userCredential')).credential : ''
+	return {
+		appCredential,
+		userCredential
+	}
+}
 // 去掉模板字符串的换号
 export const oneLine = (template, ...expressions) => {
 	let result = template.reduce((prev, next, i) => {
@@ -13,6 +21,58 @@ export const oneLine = (template, ...expressions) => {
 	result = result.trim();
 
 	return result;
+}
+// 生成messageId
+export const getuuid = () => {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = Math.random() * 16 | 0,
+			v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
+}
+// 移动警务查询类接口改造
+export const searchInterface = (condition = {
+	logicalOperate: 'and',
+	keyValueList: [],
+}, isPage = false) => {
+	let basic = {
+		parameter: {
+			dataObjId: getCredential().appCredential ? getCredential().appCredential.load.appInfo.appId : '',
+			regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.regionalismCode : '',
+			networkCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.networkAreaCode : '3',
+			condition: condition,
+			fields: '',
+			page: {
+				pageSize: isPage ? isPage : 1,
+				pageNo: isPage ? isPage : '1'
+			},
+		},
+		messageId: getuuid(),
+		version: '1.0',
+	}
+	console.log(basic)
+	return basic
+}
+// 移动警务操作类接口改造
+export const operationInterface = (data) => {
+	let basic = {
+		parameter: {
+			transaction: 0,
+			operations: [{
+				operationType: 1,
+				operationId: getuuid(),
+				dataObjId: getCredential().appCredential ? getCredential().appCredential.load.appInfo.appId : '',
+				regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.regionalismCode : '',
+				networkCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.networkAreaCode : '3',
+				data: data,
+				condition: null,
+			}]
+		},
+		messageId: getuuid(),
+		version: '1.0',
+	}
+	console.log(basic)
+	return basic
 }
 // 上传信息
 export const getPatrolInquiriesJson = (data, target) => {
@@ -54,7 +114,7 @@ export const getPatrolInquiriesJson = (data, target) => {
 	} else {
 		locationName = uni.getStorageSync('buckle')
 	}
-	return {
+	return [{
 		"optargetId": data.optargetId, //档案编号 生成规则 身份证号+当前日期精确到毫秒
 		"dataType": target == '人员' ? 15 : 16,
 		"checkException": data.checkException, //true 异常， false 正常
@@ -62,13 +122,13 @@ export const getPatrolInquiriesJson = (data, target) => {
 			"latitude": 0.0,
 			"longitude": 0.0,
 			"checkTime": new Date(data.createdAt).getTime(),
-			"policeName": "policeName",
-			"policeIdcard": "policeIdcard",
-			"policeCode": "policeCode",
-			"policeUnitCode": "policeUnitCode",
-			"policeUnit": "policeUnit",
-			"policeAreaCode": "policeAreaCode",
-			"policeArea": "policeArea",
+			"policeName": getCredential().userCredential ? getCredential().userCredential.load.userInfo.xm : '',
+			"policeIdcard": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : '',
+			"policeCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : '',
+			"policeUnitCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : '',
+			"policeUnit": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
+			"policeAreaCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
+			"policeArea": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
 			"locationId": locationId, //卡口编号
 			"locationName": locationName, //卡口名称
 			"imei": plus.device.imei,
@@ -81,7 +141,7 @@ export const getPatrolInquiriesJson = (data, target) => {
 			"idcard": data.data.idCard,
 			"address": data.data.address,
 			"birth": data.data.time,
-			"photo": ""
+			"photo": data.data.idCardImg
 		} : {},
 		"idcardCompareInfo": target == '人员' ? data.data.insertTags : {},
 		"carInfo": target == '车辆' ? {
@@ -110,5 +170,5 @@ export const getPatrolInquiriesJson = (data, target) => {
 			"text": data.data.real,
 			"photoPath": data.data.imgData.map(item => item.img),
 		}
-	}
+	}]
 }

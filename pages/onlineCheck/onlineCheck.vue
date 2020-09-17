@@ -1,7 +1,7 @@
 <template>
 	<view>
-		<wuc-tab @change="changeTab" :tab-list="tabList" textFlex :tabCur.sync="TabCur" tab-class="text-center text-black bg-white"
-		 select-class="text-blue">
+		<wuc-tab @change="changeTab" :tab-list="tabList" textFlex :tabCur.sync="TabCur"
+			tab-class="text-center text-black bg-white" select-class="text-blue">
 		</wuc-tab>
 		<block v-if="TabCur==0">
 			<view class="idcard_title" v-html="routerParams=='人员'?'人口基本信息':'车辆基本信息'">
@@ -19,7 +19,8 @@
 				</view>
 				<view class="content_right" v-if="haveBasicList.length>0">
 					<view class="content_header_left">
-						<image class="imageTouXiang" :src="routerParams=='人员'?'../../static/people.png':'../../static/car.png'" mode=""></image>
+						<image class="imageTouXiang" :src="routerParams=='人员'?'../../static/people.png':'../../static/car.png'"
+							mode=""></image>
 					</view>
 				</view>
 			</view>
@@ -49,6 +50,10 @@
 </template>
 
 <script>
+	import {
+		searchInterface,
+		getCredential
+	} from '../../utils';
 	export default {
 		data() {
 			return {
@@ -71,42 +76,105 @@
 			let curRoute = routes[routes.length - 1].route //获取当前页面路由
 			let curParam = routes[routes.length - 1].options; //获取路由参数
 			this.routerParams = curParam.type
-			this.$request('/getDataInfo', {
-				"appCode": "hlk-wwhc",
-				"devAddress": "192.168.0.1",
-				"devId": "A1W56R4G654G65W4H",
-				"hphm": curParam.type == '人员' ? "string" : curParam.idCard,
-				"hpzl": curParam.type == '人员' ? "string" : '',
-				"jybmbh": "76542",
-				"jycode": "12345",
-				"jysfzh": "622102198510014317",
-				"sfzh": curParam.idCard,
-				"target": curParam.type == '人员' ? "person" : "car",
-				"type": "getQGRKList"
-			}, "POST", "middle").then(res => {
-				if (res.result) {
-					this.basic_info = res.result[0].tags
+			// old params
+			// {
+			// 	"appCode": "hlk-wwhc",
+			// 	"devAddress": "192.168.0.1",
+			// 	"devId": "A1W56R4G654G65W4H",
+			// 	"hphm": curParam.type == '人员' ? "string" : curParam.idCard,
+			// 	"hpzl": curParam.type == '人员' ? "string" : '',
+			// 	"jybmbh": "76542",
+			// 	"jycode": "12345",
+			// 	"jysfzh": "622102198510014317",
+			// 	"sfzh": curParam.idCard,
+			// 	"target": curParam.type == '人员' ? "person" : "car",
+			// 	"type": "getQGRKList"
+			// }
+			let condition = {
+				"logicalOperate": "and",
+				"keyValueList": [
+					{
+						"key": "appCode",
+						"relationOperator": "=",
+						"value": "'hlk-wwhc'"
+					},
+					{
+						"key": "devAddress",
+						"relationOperator": "=",
+						"value": "192.168.0.1"
+					},
+					{
+						"key": "devId",
+						"relationOperator": "=",
+						"value": "A1W56R4G654G65W4H"
+					},
+					{
+						"key": "hphm",
+						"relationOperator": "=",
+						"value": curParam.type == '人员' ? "string" : curParam.idCard
+					},
+					{
+						"key": "hpzl",
+						"relationOperator": "=",
+						"value": curParam.type == '人员' ? "string" : ''
+					},
+					{
+						"key": "jybmbh",
+						"relationOperator": "=",
+						"value": getCredential().userCredential?getCredential().userCredential.load.userInfo.jh:''
+					}, {
+						"key": "jycode",
+						"relationOperator": "=",
+						"value": getCredential().userCredential?getCredential().userCredential.load.userInfo.jh:''
+					},
+					{
+						"key": "jysfzh",
+						"relationOperator": "=",
+						"value": getCredential().userCredential?getCredential().userCredential.load.userInfo.sfzh:''
+					},
+					{
+						"key": "sfzh",
+						"relationOperator": "=",
+						"value": curParam.idCard
+					}, {
+						"key": "target",
+						"relationOperator": "=",
+						"value": curParam.type == '人员' ? "person" : "car",
+					},
+					{
+						"key": "type",
+						"relationOperator": "=",
+						"value": "getQGRKList"
+					}
+				]
+
+			}
+			this.$request('/getDataInfo', searchInterface(condition), "POST", "middle").then(res => {
+				if (res.data) {
+					console.log(res.data.dataList)
+					this.basic_info = res.data.dataList[0].tags
 					let contentMiddle = []
 					let basicMiddle = []
-					for (let item of res.result[1].tags) {
+					for (let item of res.data.dataList[1].tags) {
 						if (item.haveData == true) {
 							this.haveDataList.push(item)
 							contentMiddle.push(item.data[0])
 						}
 					}
-					for (let item of res.result[0].tags) {
+					for (let item of res.data.dataList[0].tags) {
 						if (item.haveData == true) {
 							this.haveBasicList.push(item)
 							basicMiddle.push(item.data[0])
 						}
 					}
+					console.log(contentMiddle,basicMiddle)
 					this.content = contentMiddle
 					this.basicContent = basicMiddle
 				}
 			})
 		},
 		methods: {
-			changeTab(e) {},
+			changeTab(e) { },
 			selectTag(item, index) {
 				this.activeClass = index
 				this.content = item.data

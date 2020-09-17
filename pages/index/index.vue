@@ -58,10 +58,11 @@
 				<view class="drawer_userinfo_block">
 					<view class="left_name">
 						<view class="name">
-							张三
+							{{userinfo?userinfo.load.userInfo.xm:''}}
 						</view>
 						<view class="addr">
-							黑龙江哈尔滨市松北区
+							{{userinfo?userinfo.load.userInfo.sfzh:''}}
+							<!-- 黑龙江哈尔滨市松北区 -->
 						</view>
 					</view>
 					<view class="right_touxiang">
@@ -74,11 +75,11 @@
 						 :rightText="blckle?blckle:''"></uni-list-item>
 						<!-- <uni-list-item title="修改密码" thumb="../../static/mima.png" link thumb-size="sm"></uni-list-item> -->
 						<uni-list-item clickable @click="resetData" title="清除缓存" thumb="../../static/qingchu.png" link thumb-size="sm"></uni-list-item>
-						<uni-list-item title="检查版本" thumb="../../static/gengxin.png" link thumb-size="sm" rightText="v1.0.0.1"></uni-list-item>
+						<uni-list-item title="检查版本" @click="checkVersion" thumb="../../static/gengxin.png" link thumb-size="sm" rightText="v1.0.0.1"></uni-list-item>
 					</uni-list>
 				</view>
 				<view class="ogOut_block">
-					<button type="default" @click="routerLogin">退出登录</button>
+					<button type="default" @click="routerLogin">退出系统</button>
 				</view>
 			</view>
 		</uni-drawer>
@@ -90,29 +91,36 @@
 			<uni-popup-dialog :type="msgType" title="" content="是否要退出系统?" :before-close="true" @confirm="dialogLogout" @close="dialogClose"
 			 :reset="'否'" :submit="'是'"></uni-popup-dialog>
 		</uni-popup>
+		<uni-popup id="popupUpload" ref="popupUpload" type="dialog">
+			<uni-popup-dialog :type="msgType" title="" content="检测到有新版本是否更新?" :before-close="true" @confirm="dialogUpload"
+			 @close="dialogClose" :reset="'暂不更新'" :submit="'更新'"></uni-popup-dialog>
+		</uni-popup>
 	</view>
 </template>
 
 <script>
 	import uniPopupDialog from '../../components/uni-popup/uni-popup-dialog.vue';
 	import {
-		oneLine
+		oneLine,
+		getCredential
 	} from '../../utils';
 	var db = require('../../common/db.js')
+	var convert = require('xml-js')
 	export default {
 		data() {
 			return {
 				msgType: 'warn',
 				personNum: 0,
 				carNum: 0,
-				blckle: ''
+				blckle: '',
+				userinfo: getCredential().userCredential,
+				updateId: ''
 			}
 		},
 		components: {
 			uniPopupDialog
 		},
 		onShow() {
-			console.log(plus.device.imei)
 			db.openDB('data')
 			db.SelectData(this, 'person', oneLine `
 				select count(1) as count  from collectDataTable where dataType=15 and date(createdAt) =  date('now')
@@ -125,6 +133,7 @@
 			db.closeDB('data')
 		},
 		onLoad(option) {
+
 			var _this = this
 			uni.getStorage({
 				key: 'buckle',
@@ -134,20 +143,24 @@
 				}
 			});
 			this.blckle = option.type
-			// this.$request('/getUseDept', {}, "POST").then(res => {
-			// 	// 打印调用成功回调
-			// 	console.log(res)
-			// })
 		},
 		methods: {
 			dialogClose(done) {
 				done()
 			},
 			dialogLogout(done) {
-				uni.navigateTo({
-					url: '/pages/login/index'
-				})
+				plus.runtime.quit(); 
+				// uni.navigateTo({
+				// 	url: '/pages/login/index'
+				// })
 				done()
+			},
+			dialogUpload(done) {
+				this.$request('/Update/api/upgrade/downloadApk.do', {
+					fileId: this.updateId,
+				}, "POST", "htdz").then(res => {
+					// 打印调用成功回调
+				})
 			},
 			dialogConfirm(done) {
 				// this.$refs.popupMessage.open()
@@ -172,7 +185,7 @@
 				this.blckle = ''
 				uni.hideLoading()
 			},
-			// 退出登录
+			// 退出应用
 			routerLogin() {
 				this.$refs.drawer.close()
 				this.$refs.popupLogout.open()
@@ -180,6 +193,58 @@
 			resetData() {
 				this.$refs.drawer.close()
 				this.$refs.popupDialog.open()
+			},
+			checkVersion() {
+				let xmlBody =
+					oneLine `
+				<?xml version="1.0" encoding="utf-8"?>
+				<Root>
+					 <PactVersion>4.1</PactVersion>
+					 <Req>checkver</Req>
+					 <Factory>1111</Factory>
+					 <OS>Android2.3</OS>
+					 <Mod>XT711</Mod>
+					 <Soft>青岛警务通</Soft>
+					 <UserName/> 
+						<CardNo>ddsssfdd</CardNo> 
+					 <Vers>
+						 <Ver>
+							 <VerType>com.xdja.qdjwt.frame</VerType>
+							 <Version>2.371.4.1</Version>
+							 <Date>2012-12-01</Date>
+						 </Ver>
+					 </Vers>
+				</Root>
+				`
+				this.$request('/data/getXml', xmlBody, "POST", "htdz", '',
+					'', {
+						'Content-Type': 'text/xml',
+						'userCredential': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlYjViOTdiOS0yMGZjLTQ3MWMtYTBhMS1mZTQ2OGJmMjgzYzciLCJpYXQiOjE1OTkwMTQzODYsInN1YiI6IjI0MTgiLCJpc3MiOiJTZWN1cml0eSBDZW50ZXIiLCJkZXBhcnRtZW50Ijp7ImlkIjozNDk3LCJwYXJlbnRJZCI6MzQ5NiwiZGVwdGgiOjIsIm5hbWUiOiLlronovr7luIIiLCJjb2RlIjoiMjMxMjgxMDAwMDAwIn0sImdvdmVybm1lbnQiOltdLCJpZCI6MjQxOCwiaWRDYXJkIjoiMjMwMTA2MTk4ODA1MDcwNDEzIiwicGNhcmQiOiIwMDAxMDAiLCJuYW1lIjoi5rWL6K-VIiwiam9iIjpbeyJjb2RlIjoiMjAwMDAxIiwibmFtZSI6IuawkeitpiJ9XSwiY29udGFjdCI6IjEzNjEzNjAwODMwIiwiaXNBZG1pbiI6MCwiZXhwIjoxNjAxMDg3OTg2fQ.YqL1HRg9iKEwJL89EOz5mX3vwghD7jCxS_3xuTJMQVg'
+					}).then(res => {
+					let xml =
+						`
+						<?xml version="1.0" encoding="UTF-8"?>
+						<Root>
+						 <Req>checkver</Req>
+						 <Result>1</Result> //检测到更新时值为 1
+						 <ModPower>
+						 <![CDATA[com.xdja.jxclient|0|警信|1]]> //apk 中拥有的权限
+						 </ModPower>
+						 <Msg>无更新版本信息</Msg>
+						</Root>`
+					var result = convert.xml2json(xml, {
+						compact: true
+					})
+					if (result.Root.Result._text == '1') {
+						uni.showToast({
+							title: '无更新版本信息',
+							icon: 'none'
+						})
+					} else {
+						this.updateId = result.Root.Updates.Update.Files.File.FileId._text
+						this.$refs.popupUpload.open()
+					}
+				})
 			},
 			setBuckle() {
 				uni.navigateTo({
@@ -195,12 +260,12 @@
 				});
 			},
 			routerAdd(type) {
-				if(uni.getStorageSync('buckle')==''){
+				if (uni.getStorageSync('buckle') == '') {
 					uni.showToast({
-						title:'请先选择卡点',
-						icon:'none'
+						title: '请先选择卡点',
+						icon: 'none'
 					})
-					return 
+					return
 				}
 				uni.navigateTo({
 					url: `/pages/personCheck/index?type=${type}`

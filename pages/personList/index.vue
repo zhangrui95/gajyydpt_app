@@ -83,7 +83,8 @@
 <script>
 	var db = require('../../common/db.js')
 	import {
-		getPatrolInquiriesJson
+		getPatrolInquiriesJson,
+		operationInterface
 	} from '../../utils/index.js'
 	import {
 		oneLine
@@ -254,9 +255,9 @@
 				}
 				data.data.imgData = _this.imgData
 				console.log(getPatrolInquiriesJson(data, this.params))
-				this.$request('/save', getPatrolInquiriesJson(data, this.params), "POST", "htdz").then(res => {
+				this.$request('/save', operationInterface(getPatrolInquiriesJson(data, this.params)), "POST", "htdz").then(res => {
 					console.log(res)
-					if (res.reason == null) {
+					if (res.code == 200) {
 						// 将本条数据更新
 						db.openDB('data')
 						db.updataSql(
@@ -265,6 +266,11 @@
 						db.closeDB('data')
 						uni.showToast({
 							title: '上传成功'
+						});
+					} else {
+						uni.showToast({
+							title: '上传失败',
+							icon: 'none'
 						});
 					}
 				})

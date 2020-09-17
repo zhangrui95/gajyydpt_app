@@ -29,6 +29,9 @@
 </template>
 
 <script>
+	import {
+		searchInterface
+	} from '../../utils';
 	export default {
 		data() {
 			return {
@@ -39,34 +42,42 @@
 			}
 		},
 		onShow() {
+			console.log(11111111111112312)
 			var _this = this
-			this.$request('/data/getCheckPointListForClient', {
-				"currentPage": 1,
-				"currentResult": 0,
-				"entityOrField": true,
-				"pageStr": "string",
-				"pd": {},
-				"showCount": 9999,
-				"totalPage": 0,
-				"totalResult": 0
-			}, "POST", "htdz").then(res => {
-				if (res.result) {
-					_this.array = res.result.list
-				}
-				let nameList = []
-				for (let item of res.result.list) {
-					nameList.push(item.checkpoint_name)
-				}
-				console.log(res.result.list)
-				let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
-				let curRoute = routes[routes.length - 1].route //获取当前页面路由
-				let curParam = routes[routes.length - 1].options; //获取路由参数
-				if (this.networkType == 'yes') {
-					this.index = curParam.type == 'undefined' ? '' : nameList.indexOf(curParam.type)
-				} else {
-					this.buckle = curParam.type == 'undefined' ? '' : curParam.type
-				}
-			})
+			let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
+			let curRoute = routes[routes.length - 1].route //获取当前页面路由
+			let curParam = routes[routes.length - 1].options; //获取路由参数
+			if (this.networkType == 'no') {
+				this.buckle = curParam.type == 'undefined' ? '' : curParam.type
+				console.log(curParam.type)
+			} else {
+				// 拼接移动警务参数
+				// messageId = getuuid();
+				// 
+				this.$request('/data/getCheckPointListForClient', searchInterface(), "POST", "htdz").then(res => {
+					console.log(res)
+					if(res.code==200){
+						_this.array = res.data.list
+						let nameList = []
+						for (let item of res.data.list) {
+							nameList.push(item.checkpoint_name)
+						}
+						console.log(res.data.list)
+						this.index = curParam.type == 'undefined' ? '' : nameList.indexOf(curParam.type)
+					} else {
+						uni.showToast({
+							title: res.message,
+							icon:'none'
+						})
+					}
+					// if (res.data) {
+					// 	_this.array = res.data.list
+					// }
+					
+				})
+
+			}
+
 		},
 		onLoad(option) {
 
@@ -77,6 +88,7 @@
 		methods: {
 			// 下拉框值改变
 			bindPickerChange: function(e) {
+				console.log(e)
 				this.index = e.detail.value
 			},
 			clickLeft() {
@@ -97,8 +109,7 @@
 					uni.setStorage({
 						key: 'buckle',
 						data: this.buckle,
-						success: function() {
-						}
+						success: function() {}
 					});
 					type = this.buckle
 				} else {
@@ -112,14 +123,12 @@
 					uni.setStorage({
 						key: 'buckle',
 						data: this.array[this.index].checkpoint_name,
-						success: function() {
-						}
+						success: function() {}
 					});
 					uni.setStorage({
 						key: 'buckleId',
 						data: this.array[this.index].id,
-						success: function() {
-						}
+						success: function() {}
 					});
 					type = this.array[this.index].checkpoint_name
 				}

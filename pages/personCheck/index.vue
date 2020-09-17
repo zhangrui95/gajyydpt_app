@@ -161,45 +161,12 @@
 	import uniPopupDialog from '../../components/uni-popup/uni-popup-dialog.vue';
 	import moment from 'moment'
 	import {
-		oneLine
+		oneLine,
+		searchInterface,
+		getCredential
 	} from '../../utils';
 	var graceChecker = require("../../common/graceChecker.js");
 	var db = require('../../common/db.js')
-	// console.log(test)
-	// var Intent = plus.android.importClass("android.content.Intent");
-	// var intent = new Intent("com.xdja.zdsb.sfzsb.action");
-	// intent.putExtra("packagename", "");
-	// intent.putExtra("sfzbs", 1);
-	// var main = plus.android.runtimeMainActivity();
-	// main.startActivityForResult(intent, 11);
-	// main.onActivityResult = function(requestCode, resultCode, data) {   
-	//   if (REQUESTCODE == requestCode) {  
-	//     var phoneNumber = null;  
-	//     var resultString = "";  
-	//     var context = main;  
-	//     plus.android.importClass(data);  
-	//     var contactData = data.getData();  
-	//     var resolver = context.getContentResolver();  
-	//     plus.android.importClass(resolver);  
-	//     var cursor = resolver.query(contactData, null, null, null, null);  
-	//     plus.android.importClass(cursor);  
-	//     cursor.moveToFirst();  
-	//     var s_ret;  
-	//     var givenName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));  
-	//     s_ret = givenName;  
-	//     var contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));  
-	//     var pCursor = resolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,  
-	//      null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId,  
-	//      null, null);  
-	//     while (pCursor.moveToNext()) {  
-	//      phoneNumber =   pCursor.getString( pCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));  
-	//      s_ret += '\n' + phoneNumber;  
-	//     }  
-	//     alert(s_ret);  
-	//     cursor.close();  
-	//     pCursor.close();  
-	//   }  
-	// };  
 	export default {
 		data() {
 			return {
@@ -230,18 +197,8 @@
 			}
 		},
 		onShow() {
-			// var timer = setTimeout(() => {
-			// 	uni.pageScrollTo({
-			// 		duration: 0, //过渡时间必须为0，uniapp bug，否则运行到手机会报错
-			// 		scrollTop: 600, //滚动到目标位置
-			// 		success: function() {
-			// 			console.log('成功了')
-			// 		}
-			// 	})
-			// 	clearTimeout(timer)
-			// }, 100)
 			let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
-			let curRoute = routes[routes.length - 1].route //获取当前页面路由
+			var curRoute = routes[routes.length - 1].route //获取当前页面路由
 			let curParam = routes[routes.length - 1].options; //获取路由参数
 			if (curParam.type == '车辆') {
 				this.idCardImg = '../../static/car.png'
@@ -255,11 +212,29 @@
 				})
 			} else {
 				this.idCardImg = '../../static/people.png'
+				var main = plus.android.runtimeMainActivity();
+				console.log(main.getIntent())
+				var NfcInit = plus.android.importClass('com.example.wwpc.interfaceActivity');
+				var Intent = plus.android.importClass("android.content.Intent")
+				var nfc = new NfcInit();
+				setTimeout(()=>{
+					nfc.test(main, Intent);
+				},800)
+				var _this = this
+				// 监听NFC
+				plus.globalEvent.addEventListener('newintent', function() {
+					console.log('newintent running', curRoute);
+					setTimeout(() => {
+						var nfcData = nfc.nfccreate(main.getIntent())
+						// _this.idCard = nfcData.cardNo
+					}, 1000)
+				});
 			}
 
 		},
 		onHide() {
 			uni.$off('handClickBack');
+			plus.globalEvent.removeEventListener('newintent')
 		},
 		onLoad: function(option) {
 			this.params = option.type
@@ -352,42 +327,115 @@
 				}
 			},
 			getPersonOrCarTags() {
-				this.$request('/getTagsInfo', {
-					"appCode": "hlk-wwhc",
-					"devAddress": "192.168.0.1",
-					"devId": "A1W56R4G654G65W4H",
-					"hphm": this.params == '人员' ? "string" : this.idCard,
-					"hpzl": this.params == '人员' ? "string" : '',
-					"jybmbh": "76542",
-					"jycode": "12345",
-					"jysfzh": "622102198510014317",
-					"jyxm": "朱万",
-					"locationId": "230000000000",
-					"name": "string",
-					"sfzh": this.idCard,
-					"target": this.params == '人员' ? "person" : "car",
-					"type": this.params == '人员' ? "getQGRKList" : "QueryJDC",
-				}, "POST", "middle").then(res => {
+				// old params 
+				// {
+				// 	"appCode": "hlk-wwhc",
+				// 	"devAddress": "192.168.0.1",
+				// 	"devId": "A1W56R4G654G65W4H",
+				// 	"hphm": this.params == '人员' ? "string" : this.idCard,
+				// 	"hpzl": this.params == '人员' ? "string" : '',
+				// 	"jybmbh": "76542",
+				// 	"jycode": "12345",
+				// 	"jysfzh": "622102198510014317",
+				// 	"jyxm": "朱万",
+				// 	"locationId": "230000000000",
+				// 	"name": "string",
+				// 	"sfzh": this.idCard,
+				// 	"target": this.params == '人员' ? "person" : "car",
+				// 	"type": this.params == '人员' ? "getQGRKList" : "QueryJDC",
+				// }
+				let condition = {
+					"logicalOperate": "and",
+					"keyValueList": [{
+							"key": "appCode",
+							"relationOperator": "=",
+							"value": "'hlk-wwhc'"
+						},
+						{
+							"key": "devAddress",
+							"relationOperator": "=",
+							"value": "192.168.0.1"
+						},
+						{
+							"key": "devId",
+							"relationOperator": "=",
+							"value": "A1W56R4G654G65W4H"
+						},
+						{
+							"key": "hphm",
+							"relationOperator": "=",
+							"value": this.params == '人员' ? "string" : this.idCard
+						},
+						{
+							"key": "hpzl",
+							"relationOperator": "=",
+							"value": this.params == '人员' ? "string" : ''
+						},
+						{
+							"key": "jybmbh",
+							"relationOperator": "=",
+							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
+						}, {
+							"key": "jycode",
+							"relationOperator": "=",
+							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
+						},
+						{
+							"key": "jysfzh",
+							"relationOperator": "=",
+							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : ''
+						}, {
+							"key": "jyxm",
+							"relationOperator": "=",
+							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.xm : ''
+						},
+						{
+							"key": "locationId",
+							"relationOperator": ">",
+							"value": "230000000000"
+						}, {
+							"key": "name",
+							"relationOperator": "=",
+							"value": "string"
+						},
+						{
+							"key": "sfzh",
+							"relationOperator": "=",
+							"value": this.idCard
+						}, {
+							"key": "target",
+							"relationOperator": "=",
+							"value": this.params == '人员' ? "person" : "car",
+						},
+						{
+							"key": "type",
+							"relationOperator": "=",
+							"value": this.params == '人员' ? "getQGRKList" : "QueryJDC"
+						}
+					]
+
+				}
+				this.$request('/getTagsInfo', searchInterface(condition), "POST", "middle").then(res => {
 					this.insertTags = res
 					// 打印调用成功回调
-					if (res.result) {
-						let SFZ = res.result.infos[0].SFZH ? res.result.infos[0].SFZH : ''
-						this.name = this.params == '人员' ? (res.result.infos[0].XM ? res.result.infos[0].XM : '') : (res.result.infos[0]
-							.CSYS ? res.result.infos[0].CSYS : '')
-						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (res.result.infos[0].CLPP ?
-							res.result.infos[0].CLPP : '')
-						this.nation = this.params == '人员' ? (res.result.infos[0].MZ ? res.result.infos[0].MZ : '') : (res.result.infos[
-							0].CLLX ? res.result.infos[0].CLLX : '')
-						this.idCardImg = res.result.infos[0].XP ? res.result.infos[0].XP : this.params == '人员' ?
+					if (res.data) {
+						let SFZ = res.data.infos[0].SFZH ? res.data.infos[0].SFZH : ''
+						this.name = this.params == '人员' ? (res.data.infos[0].XM ? res.data.infos[0].XM : '') : (res.data.infos[0]
+							.CSYS ? res.data.infos[0].CSYS : '')
+						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (res.data.infos[0].CLPP ?
+							res.data.infos[0].CLPP : '')
+						this.nation = this.params == '人员' ? (res.data.infos[0].MZ ? res.data.infos[0].MZ : '') : (res.data.infos[
+							0].CLLX ? res.data.infos[0].CLLX : '')
+						this.idCardImg = res.data.infos[0].XP ? res.data.infos[0].XP : this.params == '人员' ?
 							'../../static/people.png' : '../../static/car.png'
 						this.time = SFZ.substring(6, 10) + "-" + SFZ.substring(10, 12) + "-" + SFZ.substring(12, 14)
-						this.address = res.result.infos[0].ZZXZ ? res.result.infos[0].ZZXZ : ''
-						this.pinCard = res.result.infos[0].CLSBDH ? res.result.infos[0].CLSBDH : '',
-							this.userName = res.result.infos[0].JDCSYR ? res.result.infos[0].JDCSYR : '',
-							this.tel = res.result.infos[0].LXFS ? res.result.infos[0].LXFS : '',
-							this.engine = res.result.infos[0].FDJH ? res.result.infos[0].FDJH : ''
-						this.remark = res.result.infos[0].bz ? res.result.infos[0].bz : ''
-						this.tags = res.result.tags
+						this.address = res.data.infos[0].ZZXZ ? res.data.infos[0].ZZXZ : ''
+						this.pinCard = res.data.infos[0].CLSBDH ? res.data.infos[0].CLSBDH : '',
+							this.userName = res.data.infos[0].JDCSYR ? res.data.infos[0].JDCSYR : '',
+							this.tel = res.data.infos[0].LXFS ? res.data.infos[0].LXFS : '',
+							this.engine = res.data.infos[0].FDJH ? res.data.infos[0].FDJH : ''
+						this.remark = res.data.infos[0].bz ? res.data.infos[0].bz : ''
+						this.tags = res.data.tags
 					}
 				})
 			},
@@ -407,24 +455,35 @@
 			},
 			// OCR识别
 			clickRight() {
-				// 导入AlertDialog类  
-				// var AlertDialog = plus.android.importClass("android.app.AlertDialog");
-				// // 创建提示框构造对象，构造函数需要提供程序全局环境对象，通过plus.android.runtimeMainActivity()方法获取  
-				// var dlg = new AlertDialog.Builder(plus.android.runtimeMainActivity());
-				// // 设置提示框标题  
-				// dlg.setTitle("自定义标题");
-				// // 设置提示框内容  
-				// dlg.setMessage("使用NJS的原生弹出框，可自定义弹出框的标题、按钮");
-				// // 设置提示框按钮  
-				// dlg.setPositiveButton("确定(或者其他字符)", null);
-				// // 显示提示框  
-				// dlg.show();
-				uni.chooseImage({
-					sourceType: ['camera'], //从相册选择
-					success: function(res) {
-						//
+				var _this = this
+				var Intent = plus.android.importClass("android.content.Intent"); //导入包
+				var intent = this.params == '人员' ? new Intent("com.xdja.zdsb.sfzsb.action") : new Intent(
+					"com.xdja.zdsb.cpsb.action"); //连接action
+				intent.putExtra("packagename", "com.explame.xxx"); //拼接参数
+				if (this.params == '人员') {
+					intent.putExtra("sfzbs", 1);
+				}
+
+				var main = plus.android.runtimeMainActivity();
+				main.startActivityForResult(intent, 11);
+				main.onActivityResult = function(requestCode, resultCode, data) {
+					console.log(requestCode, resultCode, data)
+					if (11 == requestCode) {
+						if (this.params == '人员') {
+							var sfzh = data.getStringExtra("sfzh"); //获取身份证号
+							console.log(sfzh)
+						} else {
+							var sfzh = data.getStringExtra("number"); //车牌号
+						}
+
+						this.idCard = sfzh
+					} else {
+						uni.showToast({
+							title: '识别失败',
+							icon: 'none'
+						})
 					}
-				});
+				};
 			},
 			// 添加写实
 			addReal(name) {
@@ -466,9 +525,12 @@
 			},
 			// 插入人员
 			insertPerson(formData, type, optargetId) {
+				console.log(this.insertTags)
 				let insertTags = this.insertTags
-				let checkException = insertTags.result.tags[0].property == '111001' ? '1' : '0'
-				let data = { ...formData,
+				let checkException = '0'
+				checkException = insertTags.data && insertTags.data.tags[0].property == '111001' ? '1' : '0'
+				let data = {
+					...formData,
 					insertTags
 				}
 				console.log(optargetId)
@@ -536,13 +598,15 @@
 							delta: 1,
 							success: function() {
 								uni.$emit("handClickBack", {
-									info: { ...formData,
+									info: {
+										...formData,
 										optargetId: optargetId
 									}
 								});
 							}
 						})
 					} else {
+						console.log(123123)
 						this.insertPerson(formData, 'custom', optargetId)
 					}
 				} else {
