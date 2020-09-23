@@ -3,8 +3,8 @@ export const getUserToken = () => {
 	// return sessionStorage.getItem('userToken') || '123123';
 };
 export const getCredential = () => {
-	let appCredential = appCredential ? JSON.parse(uni.getStorageSync('appCredential')).credential : ''
-	let userCredential = userCredential ? JSON.parse(uni.getStorageSync('userCredential')).credential : ''
+	let appCredential = JSON.parse(uni.getStorageSync('appCredential')).credential
+	let userCredential = JSON.parse(uni.getStorageSync('userCredential')).credential
 	return {
 		appCredential,
 		userCredential
@@ -24,7 +24,7 @@ export const oneLine = (template, ...expressions) => {
 }
 // 生成messageId
 export const getuuid = () => {
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		var r = Math.random() * 16 | 0,
 			v = c == 'x' ? r : (r & 0x3 | 0x8);
 		return v.toString(16);
@@ -125,7 +125,7 @@ export const getPatrolInquiriesJson = (data, target) => {
 			"policeName": getCredential().userCredential ? getCredential().userCredential.load.userInfo.xm : '',
 			"policeIdcard": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : '',
 			"policeCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : '',
-			"policeUnitCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : '',
+			"policeUnitCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
 			"policeUnit": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
 			"policeAreaCode": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
 			"policeArea": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
@@ -171,4 +171,38 @@ export const getPatrolInquiriesJson = (data, target) => {
 			"photoPath": data.data.imgData.map(item => item.img),
 		}
 	}]
+}
+//写入日志文件
+export const writeFile = (text, type = '信息') => {
+	plus.io.requestFileSystem(
+		plus.io.PRIVATE_DOC, // 文件系统中的根目录
+		fs => {
+			// 创建或打开文件, fs.root是根目录操作对象,直接fs表示当前操作对象
+			fs.root.getFile('wwpclog.txt', {
+				create: true // 文件不存在则创建
+			}, fileEntry => {
+				// 文件在手机中的路径
+				// console.log(fileEntry.fullPath, text)
+				fileEntry.file(function(file) {
+					fileEntry.createWriter(writer => {
+						// 写入文件成功完成的回调函数
+						writer.onwrite = e => {
+							// console.log("写入数据成功", text);
+						};
+						// let data = Blob([text], {
+						// 	type: "text/plain"
+						// });
+						// 写入数据
+						writer.seek(writer.length);
+						writer.write(`\n------${type}------\n[${new Date()}]:${text}`);
+					})
+				})
+			}, e => {
+				console.log("getFile failed: " + e.message);
+			});
+		},
+		e => {
+			console.log(e.message);
+		}
+	);
 }

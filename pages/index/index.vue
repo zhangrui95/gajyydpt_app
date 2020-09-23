@@ -61,7 +61,7 @@
 							{{userinfo?userinfo.load.userInfo.xm:''}}
 						</view>
 						<view class="addr">
-							{{userinfo?userinfo.load.userInfo.sfzh:''}}
+							{{userinfo?userinfo.load.userInfo.jh:''}}
 							<!-- 黑龙江哈尔滨市松北区 -->
 						</view>
 					</view>
@@ -75,7 +75,7 @@
 						 :rightText="blckle?blckle:''"></uni-list-item>
 						<!-- <uni-list-item title="修改密码" thumb="../../static/mima.png" link thumb-size="sm"></uni-list-item> -->
 						<uni-list-item clickable @click="resetData" title="清除缓存" thumb="../../static/qingchu.png" link thumb-size="sm"></uni-list-item>
-						<uni-list-item title="检查版本" @click="checkVersion" thumb="../../static/gengxin.png" link thumb-size="sm" rightText="v1.0.0.1"></uni-list-item>
+						<uni-list-item title="检查版本" @click="checkVersion" thumb="../../static/gengxin.png" link thumb-size="sm" :rightText="version"></uni-list-item>
 					</uni-list>
 				</view>
 				<view class="ogOut_block">
@@ -114,7 +114,8 @@
 				carNum: 0,
 				blckle: '',
 				userinfo: getCredential().userCredential,
-				updateId: ''
+				updateId: '',
+				version: plus.runtime.version
 			}
 		},
 		components: {
@@ -133,7 +134,12 @@
 			db.closeDB('data')
 		},
 		onLoad(option) {
-
+			// 初始化升级服务器组件
+			var main = plus.android.runtimeMainActivity();
+			console.log('main', main)
+			var updateApp = plus.android.importClass('com.hylink.wwpc.updateApp');
+			var update = new updateApp();
+			update.checkInit(main)
 			var _this = this
 			uni.getStorage({
 				key: 'buckle',
@@ -149,7 +155,7 @@
 				done()
 			},
 			dialogLogout(done) {
-				plus.runtime.quit(); 
+				plus.runtime.quit();
 				// uni.navigateTo({
 				// 	url: '/pages/login/index'
 				// })
@@ -195,56 +201,78 @@
 				this.$refs.popupDialog.open()
 			},
 			checkVersion() {
-				let xmlBody =
-					oneLine `
-				<?xml version="1.0" encoding="utf-8"?>
-				<Root>
-					 <PactVersion>4.1</PactVersion>
-					 <Req>checkver</Req>
-					 <Factory>1111</Factory>
-					 <OS>Android2.3</OS>
-					 <Mod>XT711</Mod>
-					 <Soft>青岛警务通</Soft>
-					 <UserName/> 
-						<CardNo>ddsssfdd</CardNo> 
-					 <Vers>
-						 <Ver>
-							 <VerType>com.xdja.qdjwt.frame</VerType>
-							 <Version>2.371.4.1</Version>
-							 <Date>2012-12-01</Date>
-						 </Ver>
-					 </Vers>
-				</Root>
-				`
-				this.$request('/data/getXml', xmlBody, "POST", "htdz", '',
-					'', {
-						'Content-Type': 'text/xml',
-						'userCredential': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlYjViOTdiOS0yMGZjLTQ3MWMtYTBhMS1mZTQ2OGJmMjgzYzciLCJpYXQiOjE1OTkwMTQzODYsInN1YiI6IjI0MTgiLCJpc3MiOiJTZWN1cml0eSBDZW50ZXIiLCJkZXBhcnRtZW50Ijp7ImlkIjozNDk3LCJwYXJlbnRJZCI6MzQ5NiwiZGVwdGgiOjIsIm5hbWUiOiLlronovr7luIIiLCJjb2RlIjoiMjMxMjgxMDAwMDAwIn0sImdvdmVybm1lbnQiOltdLCJpZCI6MjQxOCwiaWRDYXJkIjoiMjMwMTA2MTk4ODA1MDcwNDEzIiwicGNhcmQiOiIwMDAxMDAiLCJuYW1lIjoi5rWL6K-VIiwiam9iIjpbeyJjb2RlIjoiMjAwMDAxIiwibmFtZSI6IuawkeitpiJ9XSwiY29udGFjdCI6IjEzNjEzNjAwODMwIiwiaXNBZG1pbiI6MCwiZXhwIjoxNjAxMDg3OTg2fQ.YqL1HRg9iKEwJL89EOz5mX3vwghD7jCxS_3xuTJMQVg'
-					}).then(res => {
-					let xml =
-						`
-						<?xml version="1.0" encoding="UTF-8"?>
-						<Root>
-						 <Req>checkver</Req>
-						 <Result>1</Result> //检测到更新时值为 1
-						 <ModPower>
-						 <![CDATA[com.xdja.jxclient|0|警信|1]]> //apk 中拥有的权限
-						 </ModPower>
-						 <Msg>无更新版本信息</Msg>
-						</Root>`
-					var result = convert.xml2json(xml, {
-						compact: true
-					})
-					if (result.Root.Result._text == '1') {
-						uni.showToast({
-							title: '无更新版本信息',
-							icon: 'none'
-						})
-					} else {
-						this.updateId = result.Root.Updates.Update.Files.File.FileId._text
-						this.$refs.popupUpload.open()
-					}
+				uni.showLoading({
+					title: '正在检查更新'
 				})
+				// 调用sdk检查更新
+				var main = plus.android.runtimeMainActivity();
+				var updateApp = plus.android.importClass('com.hylink.wwpc.updateApp');
+				var update = new updateApp();
+				let status = update.checkUpdate(main)
+				if (status != 0) {
+					uni.hideLoading()
+				}
+				if (status == 3 || status == 2) {
+					uni.showToast({
+						'title': '当前已是最新版本',
+						icon: 'none'
+					})
+				} else {
+					this.$refs.drawer.close()
+					this.$refs.popupUpload.open()
+				}
+				console.log(status)
+				// 原来是对接后台,现在改成对接SDK
+				// let xmlBody =
+				// 	oneLine `
+				// <?xml version="1.0" encoding="utf-8"?>
+				// <Root>
+				// 	 <PactVersion>4.1</PactVersion>
+				// 	 <Req>checkver</Req>
+				// 	 <Factory>1111</Factory>
+				// 	 <OS>Android2.3</OS>
+				// 	 <Mod>XT711</Mod>
+				// 	 <Soft>青岛警务通</Soft>
+				// 	 <UserName/> 
+				// 		<CardNo>ddsssfdd</CardNo> 
+				// 	 <Vers>
+				// 		 <Ver>
+				// 			 <VerType>com.xdja.qdjwt.frame</VerType>
+				// 			 <Version>2.371.4.1</Version>
+				// 			 <Date>2012-12-01</Date>
+				// 		 </Ver>
+				// 	 </Vers>
+				// </Root>
+				// `
+				// this.$request('/data/getXml', xmlBody, "POST", "htdz", '',
+				// 	'', {
+				// 		'Content-Type': 'text/xml',
+				// 		'userCredential': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlYjViOTdiOS0yMGZjLTQ3MWMtYTBhMS1mZTQ2OGJmMjgzYzciLCJpYXQiOjE1OTkwMTQzODYsInN1YiI6IjI0MTgiLCJpc3MiOiJTZWN1cml0eSBDZW50ZXIiLCJkZXBhcnRtZW50Ijp7ImlkIjozNDk3LCJwYXJlbnRJZCI6MzQ5NiwiZGVwdGgiOjIsIm5hbWUiOiLlronovr7luIIiLCJjb2RlIjoiMjMxMjgxMDAwMDAwIn0sImdvdmVybm1lbnQiOltdLCJpZCI6MjQxOCwiaWRDYXJkIjoiMjMwMTA2MTk4ODA1MDcwNDEzIiwicGNhcmQiOiIwMDAxMDAiLCJuYW1lIjoi5rWL6K-VIiwiam9iIjpbeyJjb2RlIjoiMjAwMDAxIiwibmFtZSI6IuawkeitpiJ9XSwiY29udGFjdCI6IjEzNjEzNjAwODMwIiwiaXNBZG1pbiI6MCwiZXhwIjoxNjAxMDg3OTg2fQ.YqL1HRg9iKEwJL89EOz5mX3vwghD7jCxS_3xuTJMQVg'
+				// 	}).then(res => {
+				// 	let xml =
+				// 		`
+				// 		<?xml version="1.0" encoding="UTF-8"?>
+				// 		<Root>
+				// 		 <Req>checkver</Req>
+				// 		 <Result>1</Result> //检测到更新时值为 1
+				// 		 <ModPower>
+				// 		 <![CDATA[com.xdja.jxclient|0|警信|1]]> //apk 中拥有的权限
+				// 		 </ModPower>
+				// 		 <Msg>无更新版本信息</Msg>
+				// 		</Root>`
+				// 	var result = convert.xml2json(xml, {
+				// 		compact: true
+				// 	})
+				// 	if (result.Root.Result._text == '1') {
+				// 		uni.showToast({
+				// 			title: '无更新版本信息',
+				// 			icon: 'none'
+				// 		})
+				// 	} else {
+				// 		this.updateId = result.Root.Updates.Update.Files.File.FileId._text
+				// 		this.$refs.popupUpload.open()
+				// 	}
+				// })
 			},
 			setBuckle() {
 				uni.navigateTo({
@@ -260,13 +288,14 @@
 				});
 			},
 			routerAdd(type) {
-				if (uni.getStorageSync('buckle') == '') {
-					uni.showToast({
-						title: '请先选择卡点',
-						icon: 'none'
-					})
-					return
-				}
+				// 主要为了测试
+				// if (uni.getStorageSync('buckle') == '') {
+				// 	uni.showToast({
+				// 		title: '请先选择卡点',
+				// 		icon: 'none'
+				// 	})
+				// 	return
+				// }
 				uni.navigateTo({
 					url: `/pages/personCheck/index?type=${type}`
 				});

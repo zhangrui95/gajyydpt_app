@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "image-tools": "^1.2.1",
     "md5-es": "^1.8.2",
     "moment": "^2.27.0",
     "xml-js": "^1.6.11",

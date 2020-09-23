@@ -80,10 +80,6 @@
 
 		},
 		onLoad(option) {
-
-
-
-
 		},
 		methods: {
 			// 下拉框值改变

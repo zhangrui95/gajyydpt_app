@@ -3,7 +3,8 @@
 		<!-- 上方展示 -->
 		<view>
 			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft" background-color="#45AFDF"
-			 left-icon="back" right-text="筛选" :title="params=='人员'?'人员核查历史':'车辆核查历史'"></uni-nav-bar>
+			 left-icon="back" right-text="筛选" :title="params=='人员'?'人员核查历史':'车辆核查历史'">
+			</uni-nav-bar>
 		</view>
 		<view class="view_header">
 			<view class="">盘查总数: {{checkCount}}</view>
@@ -18,7 +19,8 @@
 			 :note="params=='人员'?'<div>身份证号:'+item.data['idCard']+'</div><div>采集时间:'+item.createdAt+'</div>':'<div>人员数量:'+item.data['personData'].length+'</div><div>采集时间:'+item.createdAt+'</div>'">
 
 				<view v-if="item.isUpload==0" class="chat-custom-right">
-					<uni-icons @click="uploadData(item,item.optargetId)" type="cloud-upload-filled" color="#FF6C00" size="26"></uni-icons>
+					<uni-icons @click="uploadData(item,item.optargetId)" type="cloud-upload-filled" color="#FF6C00" size="26">
+					</uni-icons>
 				</view>
 			</uni-list-chat>
 		</uni-list>
@@ -83,12 +85,14 @@
 <script>
 	var db = require('../../common/db.js')
 	import {
-		getPatrolInquiriesJson,
-		operationInterface
-	} from '../../utils/index.js'
+		pathToBase64
+	} from 'image-tools'
 	import {
+		getPatrolInquiriesJson,
+		operationInterface,
+		convertImgToBase64,
 		oneLine
-	} from '../../utils';
+	} from '../../utils/index.js'
 
 	function getDate(type) {
 		const date = new Date();
@@ -155,16 +159,16 @@
 			db.openDB('data')
 			this.selectList('noSearch')
 			// 盘查总数
-			db.SelectCheck(this, oneLine `select count(1) as checkCount from collectDataTable where dataType=${this.params=='车辆'?16:15}`,
+			db.SelectCheck(this, oneLine `select count(1) as checkCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15}`,
 				'checkCount')
 			// 异常总数
-			db.SelectCheck(this, oneLine `select count(1) as checkExceptionCount from collectDataTable where dataType=${this.params=='车辆'?16:15} and checkException!=0`,
+			db.SelectCheck(this, oneLine `select count(1) as checkExceptionCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and checkException!=0`,
 				'checkExceptionCount')
 			// 今日盘查数
-			db.SelectCheck(this, oneLine `select count(1) as checkToday from collectDataTable where dataType=${this.params=='车辆'?16:15} and date(createdAt) =  date('now')`,
+			db.SelectCheck(this, oneLine `select count(1) as checkToday from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now')`,
 				'checkToday')
 			// 今日异常数
-			db.SelectCheck(this, oneLine `select count(1) as checkExceptionToady from collectDataTable where dataType=${this.params=='车辆'?16:15} and date(createdAt) =  date('now') and checkException!=0`,
+			db.SelectCheck(this, oneLine `select count(1) as checkExceptionToady from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now') and checkException!=0`,
 				'checkExceptionToady')
 			db.closeDB('data')
 		},
@@ -187,11 +191,11 @@
 				FROM
 					collectDataTable 
 				WHERE
-					dataType = ${this.params=='车辆'?16:15}
-					${this.radioValue=='0'||this.radioValue==''?'and 1=1':this.radioValue=='1'?'AND checkException = 0':'AND checkException = 1'}
-					${type=='noSearch'?'AND date(createdAt) =  date("now")':`AND data LIKE '%${search}%' 
+					dataType = ${this.params == '车辆' ? 16 : 15}
+					${this.radioValue == '0' || this.radioValue == '' ? 'and 1=1' : this.radioValue == '1' ? 'AND checkException = 0' : 'AND checkException = 1'}
+					${type == 'noSearch' ? 'AND date(createdAt) =  date("now")' : `AND data LIKE '%${search}%' 
 					AND createdAt BETWEEN '${this.date} ${this.time}:00'
-					AND '${this.date1} ${this.time1}:59'` }
+					AND '${this.date1} ${this.time1}:59'`}
 					ORDER BY createdAt desc
 				`,
 					false)
@@ -241,18 +245,30 @@
 				let _this = this
 				console.log('data.imgData', data.data.imgData)
 				for (let item of data.data.imgData) {
-					console.log('item', item)
-					await _this.$request('/data/FilePicupload', {}, "POST", "htdz", 'file', item.img).then(res => {
-						// 打印调用成功回调
-						if (res.data) {
-							let data = JSON.parse(res.data)
-							console.log(data)
+					// console.log('item', item)
+					await pathToBase64(item.img)
+						.then(base64 => {
 							_this.imgData.push({
-								img: data.result
+								img: base64
 							})
-						}
-					})
+						})
+						.catch(error => {
+							console.error(error)
+						})
+					// 不采用上传图片的方式了  移动警务三类网络不支持上传图片
+					// await _this.$request('/data/FilePicupload', {}, "POST", "htdz", 'file', item.img).then(res => {
+					// 	// 打印调用成功回调
+					// 	if (res.data) {
+					// 		let data = JSON.parse(res.data)
+					// 		console.log(data)
+					// 		_this.imgData.push({
+					// 			img: data.result
+					// 		})
+					// 	}
+					// })
+
 				}
+				console.log(_this.imgData)
 				data.data.imgData = _this.imgData
 				console.log(getPatrolInquiriesJson(data, this.params))
 				this.$request('/save', operationInterface(getPatrolInquiriesJson(data, this.params)), "POST", "htdz").then(res => {

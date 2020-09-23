@@ -78,8 +78,8 @@
 				</view>
 			</view>
 			<view class="content_footer" v-if="params=='人员'">
-				<button class="btn" type="default" @click="routerCheck">在线核查</button>
-				<button class="btn" type="default">人像比对</button>
+				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
+				<!-- <button class="btn" type="default">人像比对</button> -->
 			</view>
 			<view class="content_footer" v-if="params=='车辆'">
 				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
@@ -163,7 +163,8 @@
 	import {
 		oneLine,
 		searchInterface,
-		getCredential
+		getCredential,
+		writeFile
 	} from '../../utils';
 	var graceChecker = require("../../common/graceChecker.js");
 	var db = require('../../common/db.js')
@@ -193,7 +194,8 @@
 				engine: '',
 				remark: '',
 				address: '',
-				idCardImg: '../../static/people.png'
+				idCardImg: '../../static/people.png',
+				Runarguments: ''
 			}
 		},
 		onShow() {
@@ -210,31 +212,54 @@
 					}
 
 				})
+				let reg =
+					/^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/
+				if (reg.test(this.idCard)) {
+					this.getPersonOrCarTags()
+				}
 			} else {
 				this.idCardImg = '../../static/people.png'
+				let reg = /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/
+				console.log(reg.test(this.idCard), this.idCard)
+				// 身份证号验证通过
+				if (reg.test(this.idCard)) {
+					this.getPersonOrCarTags()
+				}
 				var main = plus.android.runtimeMainActivity();
 				console.log(main.getIntent())
-				var NfcInit = plus.android.importClass('com.example.wwpc.interfaceActivity');
+				var NfcInit = plus.android.importClass('com.hylink.wwpc.interfaceActivity');
 				var Intent = plus.android.importClass("android.content.Intent")
 				var nfc = new NfcInit();
-				setTimeout(()=>{
+				setTimeout(() => {
 					nfc.test(main, Intent);
-				},800)
+				}, 800)
+				console.log('我执行了几次')
 				var _this = this
 				// 监听NFC
 				plus.globalEvent.addEventListener('newintent', function() {
-					console.log('newintent running', curRoute);
-					setTimeout(() => {
-						var nfcData = nfc.nfccreate(main.getIntent())
-						// _this.idCard = nfcData.cardNo
-					}, 1000)
-				});
+					console.log('newintent running', _this.Runarguments, JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE);
+					if (JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE == _this.Runarguments) {
+						return
+					} else {
+						setTimeout(() => {
+							nfc.nfccreate(main.getIntent())
+						}, 1000)
+					}
+					_this.Runarguments = JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE
+				}, false);
 			}
 
 		},
 		onHide() {
 			uni.$off('handClickBack');
-			plus.globalEvent.removeEventListener('newintent')
+			this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
+			this.eventManager = this.myEventManager.getMyEventManager();
+			this.eventManager.removeListener("onShow");
+		},
+		onUnload: function() {
+			console.log('卸载组件')
+			this.eventManager = this.myEventManager.getMyEventManager();
+			this.eventManager.removeListener("onShow");
 		},
 		onLoad: function(option) {
 			this.params = option.type
@@ -243,10 +268,34 @@
 				title: `${option.type}核查`
 			})
 			if (option.type == '人员') {
+
 				// 打开数据库,执行查询语句
 				db.openDB('dict')
 				db.SelectDict(this, 't_sys_label', 'type', '15')
 				db.closeDB('dict')
+				this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
+				this.eventManager = this.myEventManager.getMyEventManager();
+				//新建监听器
+				var _this = this
+				this.myListener = plus.android.implements("com.hylink.wwpc.MyListener", {
+					onChange: function(event) {
+						//导入类  
+						plus.android.importClass(event);
+						//获取数据
+						if(_this.idCard == JSON.parse(event.getData()).cardNo){
+							return
+						} 
+						_this.idCard = JSON.parse(event.getData()).cardNo
+						_this.getPersonOrCarTags()
+						//获取来源  
+						console.log('event.getData()', event.getSource());
+					}
+				})
+				this.eventManager.addListener("onShow", this.myListener);
+				this.eventManager = null
+				this.myEventManager = null
+				this.myListener = null
+
 			}
 			if (option.type == '车辆') {
 				db.openDB('dict')
@@ -318,6 +367,7 @@
 			},
 			// 输入框值改变
 			inputChange(e) {
+				console.log('改变了吗', 1111, e.detail.value)
 				let reg = this.params == '人员' ?
 					/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/ :
 					/^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/
@@ -344,6 +394,7 @@
 				// 	"target": this.params == '人员' ? "person" : "car",
 				// 	"type": this.params == '人员' ? "getQGRKList" : "QueryJDC",
 				// }
+				console.log('我应该调用了啊')
 				let condition = {
 					"logicalOperate": "and",
 					"keyValueList": [{
@@ -455,28 +506,37 @@
 			},
 			// OCR识别
 			clickRight() {
+				if (!plus.runtime.isApplicationExist({
+						"pname": "com.xdja.zdsb"
+					})) {
+					uni.showToast({
+						title: '当前手机没有安装OCR组件,需要去应用中心进行安装',
+						icon: 'none'
+					})
+					return;
+				}
 				var _this = this
+				var main = plus.android.runtimeMainActivity();
 				var Intent = plus.android.importClass("android.content.Intent"); //导入包
 				var intent = this.params == '人员' ? new Intent("com.xdja.zdsb.sfzsb.action") : new Intent(
 					"com.xdja.zdsb.cpsb.action"); //连接action
-				intent.putExtra("packagename", "com.explame.xxx"); //拼接参数
+				intent.putExtra("packagename", "com.hylink.wwpc"); //拼接参数
 				if (this.params == '人员') {
-					intent.putExtra("sfzbs", 1);
+					intent.putExtra("sfzbs", 0);
 				}
-
-				var main = plus.android.runtimeMainActivity();
 				main.startActivityForResult(intent, 11);
 				main.onActivityResult = function(requestCode, resultCode, data) {
-					console.log(requestCode, resultCode, data)
-					if (11 == requestCode) {
-						if (this.params == '人员') {
-							var sfzh = data.getStringExtra("sfzh"); //获取身份证号
+					if (resultCode == '-1') {
+						if (requestCode == 11) {
+							if (_this.params == '人员') {
+								var sfzh = data.getStringExtra("sfzh"); //获取身份证号
+								console.log(sfzh)
+							} else {
+								var sfzh = data.getStringExtra("number"); //车牌号
+							}
 							console.log(sfzh)
-						} else {
-							var sfzh = data.getStringExtra("number"); //车牌号
+							_this.idCard = sfzh
 						}
-
-						this.idCard = sfzh
 					} else {
 						uni.showToast({
 							title: '识别失败',
