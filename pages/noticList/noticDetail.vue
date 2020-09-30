@@ -1,0 +1,119 @@
+<template>
+	<view style="height: 100vh;background-color: #F8F8F8;">
+		<view class="buckle_title">
+			{{detailInfo.bt}}
+		</view>
+		<view class="buckle">
+			<view class="">
+				发布单位
+			</view>
+			<view class="" style="margin-right: 32rpx;">
+				{{detailInfo.fbdwmc}}
+			</view>
+		</view>
+		<view class="buckle">
+			<view class="">
+				发布人
+			</view>
+			<view class="" style="margin-right: 32rpx;">
+				{{detailInfo.fbrxm}}
+			</view>
+		</view>
+		<!-- 详情 -->
+		<view style="margin-top: 40rpx;">
+			<view class="buckle">
+				<view class="">
+					警情详情
+				</view>
+			</view>
+			<view class="buckleDetail">
+				<view class="">
+					{{detailInfo.nr}}
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				detailInfo: {
+					"notice_id": "5fd4fcc10ac74e3bbd6031f828c77f2b",
+					"xh": null,
+					"bt": "123",
+					"fbdwmc": "黑龙江省",
+					"fbrbm": "33322201",
+					"fbrxm": "张馨蕊",
+					"fbsj": "2020-09-28 10:02:18",
+					"fsdwbm": "230000000000",
+					"fsdwdj": "1",
+					"fsjc": null,
+					"fslx": "1",
+					"fsyhbm": null,
+					"isread": "28",
+					"nr": "123",
+					"fbdwbm": "230000000000",
+					"visibale": 1
+				}
+			}
+		},
+		onShow() {
+			let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
+			var curRoute = routes[routes.length - 1].route //获取当前页面路由
+			let curParam = routes[routes.length - 1].options; //获取路由参数
+			console.log(curRoute, curParam)
+			uni.request({
+				method: 'post',
+				url: 'http://192.168.104.250:7701/jq/getJqTztgDetail',
+				data: {
+					"notice_id": curParam.id,
+					"imei": '864131031213992'
+				},
+				header: {
+					Authorization: '1111'
+				},
+				dataType: 'json',
+			}).then((response) => {
+				console.log(response)
+			}).catch(error => {
+				console.log(response)
+			})
+		},
+		methods: {
+
+		}
+	}
+</script>
+
+<style scoped>
+	page {
+	      background-color: #F8F8F8;
+	  }
+	.buckle_title {
+		color: #3EBFDF;
+		font-size: 28rpx;
+		height: 80rpx;
+		line-height: 80rpx;
+		background: #F8F8F8;
+		padding-left: 20rpx;
+	}
+	.buckle{
+		display: flex;
+		justify-content: space-between;
+		color: #1A1F25;
+		font-size: 28rpx;
+		height: 80rpx;
+		line-height: 80rpx;
+		padding-left: 20rpx;
+		background-color: #FFFFFF;
+		border-bottom: 1px solid #EDEDED;
+	}
+	.buckleDetail{
+		padding: 10rpx 10rpx 10rpx 20rpx;
+		background-color: #FFFFFF;
+		color: #1A1F25;
+		font-size: 28rpx;
+	}
+</style>

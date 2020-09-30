@@ -54,38 +54,36 @@
 				// 拼接移动警务参数
 				// messageId = getuuid();
 				// 
-				this.$request('/data/getCheckPointListForClient', searchInterface(), "POST", "htdz").then(res => {
-					console.log(res)
-					if(res.code==200){
-						_this.array = res.data.list
+				this.$request('/data/getCheckPointListForClient', searchInterface(undefined,false,'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9'), "POST", "htdz").then(res => {
+					console.log(res.data.dataList[0].fieldValues[0].value)
+					if (res.code == 200) {
+
+						_this.array = JSON.parse(res.data.dataList[0].fieldValues[0].value)
 						let nameList = []
-						for (let item of res.data.list) {
+						for (let item of _this.array) {
 							nameList.push(item.checkpoint_name)
 						}
-						console.log(res.data.list)
-						this.index = curParam.type == 'undefined' ? '' : nameList.indexOf(curParam.type)
+						this.index = curParam.type == 'undefined' ? -1 : nameList.indexOf(curParam.type)
 					} else {
 						uni.showToast({
 							title: res.message,
-							icon:'none'
+							icon: 'none'
 						})
 					}
 					// if (res.data) {
 					// 	_this.array = res.data.list
 					// }
-					
+
 				})
 
 			}
 
 		},
-		onLoad(option) {
-		},
+		onLoad(option) {},
 		methods: {
 			// 下拉框值改变
 			bindPickerChange: function(e) {
-				console.log(e)
-				this.index = e.detail.value
+				this.index = e.detail.value == -1 ? 0 : e.detail.value
 			},
 			clickLeft() {
 				uni.navigateBack({

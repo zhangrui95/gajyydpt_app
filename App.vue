@@ -3,8 +3,13 @@
 	import {
 		oneLine,
 		getuuid,
-		writeFile
+		writeFile,
+		getPatrolInquiriesJson,
+		operationInterface
 	} from './utils';
+	import {
+		pathToBase64
+	} from 'image-tools'
 	export default {
 		onLaunch: function() {
 			db.openDB('data')
@@ -32,7 +37,7 @@
 					  [createdAt] datetime, checkException bool, IsSDFinish VARCHAR2 default 0);
 				)`
 			)
-			db.closeDB('data')
+			// db.closeDB('data')
 			// uni.navigateTo({
 			// 	url: `pages/index/index`
 			// })
@@ -68,6 +73,7 @@
 					var appCredential = bundle.getString("appCredential");
 					uni.setStorageSync('appCredential', appCredential)
 					uni.setStorageSync('userCredential', userCredential)
+					console.log(appCredential, userCredential)
 					writeFile(`获取票据成功`, '统一认证返回信息')
 					uni.navigateTo({
 						url: `/index/index/index`
@@ -99,7 +105,7 @@
 					} else {
 						var messageId = bundleXz.getString("messageId")
 						var resourceList = bundleXz.getString("resourceList")
-						console.log(messageId,resourceList)
+						console.log(messageId, resourceList)
 						if (paramsMessageId == messageId) {
 							var resultCode = bundleXz.getInt("resultCode")
 							if (resultCode == 0) {
@@ -126,43 +132,106 @@
 			// 	console.log("Request file system failed: " + e.message);
 			// });
 			// 请求本地文件系统对象
-			plus.io.requestFileSystem(
-				plus.io.PRIVATE_DOC, // 文件系统中的根目录
-				fs => {
-					// 创建或打开文件, fs.root是根目录操作对象,直接fs表示当前操作对象
-					fs.root.getFile('test.json', {
-						create: true // 文件不存在则创建
-					}, fileEntry => {
-						// 文件在手机中的路径
-						console.log(fileEntry.fullPath)
-						fileEntry.createWriter(writer => {
-							// 写入文件成功完成的回调函数
-							writer.onwrite = e => {
-								// console.log("写入数据成功");
-							};
-							// 写入数据
-							writer.write(JSON.stringify({
-								"sid": "c5516ec3-5965-4803-874c-799239049cdb",
-								"aqzx": "http://192.168.3.51:8100",
-								"middle": "http://192.168.104.245:7100",
-								"htdz": "http://192.168.104.245:7005"
-							}));
-						})
-					}, e => {
-						console.log("getFile failed: " + e.message);
-					});
-				},
-				e => {
-					console.log(e.message);
-				}
-			);
+			// plus.io.requestFileSystem(
+			// 	plus.io.PRIVATE_DOC, // 文件系统中的根目录
+			// 	fs => {
+			// 		// 创建或打开文件, fs.root是根目录操作对象,直接fs表示当前操作对象
+			// 		fs.root.getFile('test.json', {
+			// 			create: true // 文件不存在则创建
+			// 		}, fileEntry => {
+			// 			// 文件在手机中的路径
+			// 			console.log(fileEntry.fullPath)
+			// 			fileEntry.createWriter(writer => {
+			// 				// 写入文件成功完成的回调函数
+			// 				writer.onwrite = e => {
+			// 					// console.log("写入数据成功");
+			// 				};
+			// 				// 写入数据
+			// 				writer.write(JSON.stringify({
+			// 					"sid": "c5516ec3-5965-4803-874c-799239049cdb",
+			// 					"aqzx": "http://192.168.3.51:8100",
+			// 					"middle": "http://192.168.104.245:7100",
+			// 					"htdz": "http://192.168.104.245:7005"
+			// 				}));
+			// 			})
+			// 		}, e => {
+			// 			console.log("getFile failed: " + e.message);
+			// 		});
+			// 	},
+			// 	e => {
+			// 		console.log(e.message);
+			// 	}
+			// );
 			console.log('App Launch');
 		},
 		onShow: function() {
-			console.log('App Show');
+			let app = getApp()
+			console.log(app)
+			// this.time = setInterval(this.uploadData, 10000)
+			// this.timeGetNotice = setInterval(this.getNotice, 120000)
+			// setInterval(() => {
+			// 	uni.$emit('isRead', '222');
+			// 	console.log(app.globalData.text)
+			// }, 10000)
 		},
 		onHide: function() {
+			clearInterval(this.time)
 			console.log('App Hide');
+		},
+		methods: {
+			async upload(data) {
+				let _this = this
+				let imgData = []
+				for (let item of data) {
+					for (let value of item.data.imgData) {
+						// console.log('item', item)
+						await pathToBase64(value.img)
+							.then(base64 => {
+								imgData.push({
+									img: base64
+								})
+							})
+							.catch(error => {
+								console.error(error)
+							})
+
+					}
+					console.log(imgData)
+					item.data.imgData = imgData
+					let dataType = item.dataType == 15 ? '人员' : '车辆'
+					console.log(operationInterface(getPatrolInquiriesJson(item, dataType)))
+					this.$request('/save', operationInterface(getPatrolInquiriesJson(item, dataType)), "POST", "htdz").then(res => {
+						console.log(res)
+						if (res.code == 200) {
+							// 将本条数据更新
+							// db.openDB('data')
+							db.updataSql(
+								`UPDATE collectDataTable SET isUpload = '1' WHERE optargetId = '${item.optargetId}'`)
+							// db.closeDB('data')
+						} else {}
+					}).catch(err => {
+						console.log(err)
+					})
+				}
+
+			},
+			uploadData() {
+				db.SelectData(this, 'person', oneLine `
+				SELECT
+					data,
+					createdAt,
+					isUpload,
+					optargetId,
+					checkException,
+					dataType
+				FROM
+					collectDataTable 
+				WHERE isUpload = 0
+				`,
+					false, (data) => {
+						this.upload(data)
+					})
+			}
 		}
 	};
 </script>

@@ -25,6 +25,14 @@ function closeDB(name) {
 }
 // 创建表语句
 function executeSQL(sql) {
+	// 判断数据库是否打开了 没打开的情况下，要打开
+	var isOpen = plus.sqlite.isOpenDatabase({
+		name: 'data', //数据库的名字  
+		path: '_doc/collectionData.db' //地址  
+	});
+	if (!isOpen) {
+		openDB('data')
+	}
 	plus.sqlite.executeSql({
 		name: 'data',
 		sql: `${sql}`,
@@ -56,7 +64,15 @@ function SelectDict(that, table, type, condition) {
 	});
 }
 
-function SelectData(that, type, sql, ifCount) {
+function SelectData(that, type, sql, ifCount,callback) {
+	// 判断数据库是否打开了 没打开的情况下，要打开
+	var isOpen = plus.sqlite.isOpenDatabase({
+		name: 'data', //数据库的名字  
+		path: '_doc/collectionData.db' //地址  
+	});
+	if (!isOpen) {
+		openDB('data')
+	}
 	console.log(sql)
 	plus.sqlite.selectSql({
 		name: 'data',
@@ -75,6 +91,9 @@ function SelectData(that, type, sql, ifCount) {
 						item.data = JSON.parse(item.data)
 					}
 					that.dataList = e
+					if(callback){
+						callback(e)
+					}
 				}
 			}
 		},
@@ -85,6 +104,14 @@ function SelectData(that, type, sql, ifCount) {
 }
 
 function SelectCheck(that, sql, type) {
+	// 判断数据库是否打开了 没打开的情况下，要打开
+	var isOpen = plus.sqlite.isOpenDatabase({
+		name: 'data', //数据库的名字  
+		path: '_doc/collectionData.db' //地址  
+	});
+	if (!isOpen) {
+		openDB('data')
+	}
 	plus.sqlite.selectSql({
 		name: 'data',
 		sql: sql,
@@ -113,6 +140,14 @@ function SelectCheck(that, sql, type) {
 	});
 }
 function updataSql (sql){
+	// 判断数据库是否打开了 没打开的情况下，要打开
+	var isOpen = plus.sqlite.isOpenDatabase({
+		name: 'data', //数据库的名字  
+		path: '_doc/collectionData.db' //地址  
+	});
+	if (!isOpen) {
+		openDB('data')
+	}
 	console.log(sql)
 	plus.sqlite.executeSql({
 		name: 'data',
@@ -126,6 +161,14 @@ function updataSql (sql){
 	});
 }
 function insertData(that, type, sql) {
+	// 判断数据库是否打开了 没打开的情况下，要打开
+	var isOpen = plus.sqlite.isOpenDatabase({
+		name: 'data', //数据库的名字  
+		path: '_doc/collectionData.db' //地址  
+	});
+	if (!isOpen) {
+		openDB('data')
+	}
 	plus.sqlite.executeSql({
 		name: 'data',
 		sql: `${sql}`,
@@ -148,6 +191,14 @@ function insertData(that, type, sql) {
 }
 // 删除数据库
 function deleteTable(table) {
+	// 判断数据库是否打开了 没打开的情况下，要打开
+	var isOpen = plus.sqlite.isOpenDatabase({
+		name: 'data', //数据库的名字  
+		path: '_doc/collectionData.db' //地址  
+	});
+	if (!isOpen) {
+		openDB('data')
+	}
 	plus.sqlite.executeSql({
 		name: 'data',
 		sql: `delete from ${table}`,

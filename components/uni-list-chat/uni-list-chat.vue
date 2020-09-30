@@ -5,7 +5,7 @@
 		<view :hover-class="!clickable && !link ? '' : 'uni-list-chat--hover'" class="uni-list-chat" @click.stop="onClick">
 			<view :class="{ 'uni-list--border': border, 'uni-list-chat--first': isFirstChild }"></view>
 			<view class="uni-list-chat__container" :style="status=='1'?'background-color:#FEE0E0':''">
-				<view class="uni-list-chat__header-warp">
+				<view v-if="avatar" class="uni-list-chat__header-warp">
 					<view v-if="avatarCircle || avatarList.length === 0" class="uni-list-chat__header" :class="{ 'header--circle': avatarCircle }">
 						<image class="uni-list-chat__header-image" :src="avatar" mode="aspectFill"></image>
 					</view>
@@ -23,7 +23,19 @@
 				</view>
 				<view class="uni-list-chat__content">
 					<view class="uni-list-chat__content-main">
-						<text class="uni-list-chat__content-title uni-ellipsis">{{ title }}</text>
+						<view class="uni-list-chat__content-title uni-ellipsis">
+							<block v-if="type=='notic'">
+								<view class="example-body">
+									{{title}}
+									<view class="tag-view">
+										<uni-tag inverted="true" :text="isRead=='1'?'已确认':'未确认'" :type="isRead=='1'?'success':'error'" />
+									</view>
+								</view>
+							</block>
+							<block v-else>
+								{{title}}
+							</block>
+						</view>
 						<!-- 将绑定的属性修改到v-html -->
 						<!-- <text class="uni-list-chat__content-note uni-ellipsis">{{note}}</text> -->
 						<text class="uni-list-chat__content-note uni-ellipsis" v-html="note"></text>
@@ -123,6 +135,14 @@
 				default () {
 					return [];
 				}
+			},
+			type: {
+				type: String,
+				default: 'list'
+			},
+			isRead: {
+				type: String,
+				default: ''
 			}
 		},
 		inject: ['list'],
@@ -171,6 +191,7 @@
 		methods: {
 			onClick() {
 				if (this.to !== '') {
+					
 					this.openPage();
 					return;
 				}
@@ -440,6 +461,7 @@
 		overflow: hidden;
 	}
 
+	// 修改了样式 time的样式
 	.uni-list-chat__content-extra {
 		/* #ifndef APP-NVUE */
 		flex-shrink: 0;
@@ -449,7 +471,7 @@
 		// justify-content: space-between;
 		// align-items: flex-end;
 		// 修改样式
-		justify-content: center;
+		justify-content: flex-start;
 		align-items: center;
 		margin-left: 5px;
 	}
@@ -524,5 +546,29 @@
 		/* #ifdef APP-NVUE */
 		left: 0;
 		/* #endif */
+	}
+
+	.example-body {
+		/* #ifndef APP-PLUS-NVUE */
+		display: flex;
+		/* #endif */
+		flex-direction: row;
+		justify-content: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.tag-view {
+		/* #ifndef APP-PLUS-NVUE */
+		display: flex;
+		/* #endif */
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.uni-tag {
+		padding: 0 10rpx;
+		height: 44rpx;
+		line-height: 44rpx;
+		margin-left: 10rpx;
 	}
 </style>

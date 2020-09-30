@@ -12,6 +12,9 @@
 			<view class="">今日盘查数:{{checkToday}}</view>
 			<view class="">今日异常数:{{checkExceptionToady}}</view>
 		</view>
+		<uni-notice-bar showIcon="true" scrollable="true"
+		text="您有新的通知,请及时处理">
+		</uni-notice-bar>
 		<uni-list :border="true">
 			<!-- 右侧带角标 -->
 			<uni-list-chat v-for="(item,index) in dataList" :key="index" :title="params=='人员'?'姓名:'+item.data.name:item.data['idCard']"
@@ -156,7 +159,7 @@
 			}
 		},
 		onShow() {
-			db.openDB('data')
+			// db.openDB('data')
 			this.selectList('noSearch')
 			// 盘查总数
 			db.SelectCheck(this, oneLine `select count(1) as checkCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15}`,
@@ -170,7 +173,7 @@
 			// 今日异常数
 			db.SelectCheck(this, oneLine `select count(1) as checkExceptionToady from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now') and checkException!=0`,
 				'checkExceptionToady')
-			db.closeDB('data')
+			// db.closeDB('data')
 		},
 		onLoad: function(option) {
 			this.params = option.type
@@ -201,9 +204,9 @@
 					false)
 			},
 			searchSubmit() {
-				db.openDB('data')
+				// db.openDB('data')
 				this.selectList()
-				db.closeDB('data')
+				// db.closeDB('data')
 				this.$refs.drawerFilter.close();
 			},
 			resetSubmit() {
@@ -233,9 +236,9 @@
 				this.date1 = getDate({
 					format: true
 				})
-				db.openDB('data')
+				// db.openDB('data')
 				this.selectList('noSearch')
-				db.closeDB('data')
+				// db.closeDB('data')
 				this.$refs.drawerFilter.close();
 			},
 			clickRight() {
@@ -275,11 +278,11 @@
 					console.log(res)
 					if (res.code == 200) {
 						// 将本条数据更新
-						db.openDB('data')
+						// db.openDB('data')
 						db.updataSql(
 							`UPDATE collectDataTable SET isUpload = '1' WHERE optargetId = '${optargetId}'`)
 						this.selectList()
-						db.closeDB('data')
+						// db.closeDB('data')
 						uni.showToast({
 							title: '上传成功'
 						});

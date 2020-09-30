@@ -22,13 +22,14 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 	header = {
 		'Content-Type': 'application/json;charset=UTF-8',
 		'appCredential': encodeURIComponent(uni.getStorageSync('appCredential')),
-		'userCredential': encodeURIComponent(uni.getStorageSync('userCredential')),
+		'userCredential': encodeURIComponent(uni.getStorageSync('userCredential'))
 	}) => {
 	return new Promise((resolve, reject) => {
 		uni.getNetworkType({
 			success: function(res) {
 				let requestUrl = ''
 				let resourceList = JSON.parse(uni.getStorageSync('resourceList'))
+				console.log(resourceList, url)
 				switch (url) {
 					case '/data/getCheckPointListForClient':
 						requestUrl = resourceList.find((item) => item.resourceId ==
@@ -36,17 +37,13 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 						break;
 					case '/getDataInfo':
 						requestUrl = resourceList.find((item) => item.resourceId ==
-							'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9').resourceAddress
+							'230000000000-3-0100-b4e0d2be5dd147e49adc8e6ae4addac2').resourceAddress
 						break;
 					case '/getTagsInfo':
 						requestUrl = resourceList.find((item) => item.resourceId ==
-							'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9').resourceAddress
+							'230000000000-3-0100-f63ed79512254e3e926fe7556a975089').resourceAddress
 						break;
 					case '/save':
-						requestUrl = resourceList.find((item) => item.resourceId ==
-							'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9').resourceAddress
-						break;
-					case '/data/getCheckPoistForClient':
 						requestUrl = resourceList.find((item) => item.resourceId ==
 							'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9').resourceAddress
 						break;

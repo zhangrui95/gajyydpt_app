@@ -5,7 +5,8 @@
 			 left-icon="back" right-icon="camera" :title="params=='人员'?'人员核查':'车辆核查'">
 			</uni-nav-bar>
 		</view>
-
+		<uni-notice-bar showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
+		</uni-notice-bar>
 		<view class="idcard_title" v-html="params=='人员'?'二代身份证采集':'车辆采集'">
 
 		</view>
@@ -195,7 +196,8 @@
 				remark: '',
 				address: '',
 				idCardImg: '../../static/people.png',
-				Runarguments: ''
+				Runarguments: '',
+				IdentificationType: ''
 			}
 		},
 		onShow() {
@@ -220,30 +222,35 @@
 			} else {
 				this.idCardImg = '../../static/people.png'
 				let reg = /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/
-				console.log(reg.test(this.idCard), this.idCard)
+				uni.$on("IdentificationType", res => {
+					if (res) {
+						this.IdentificationType = res.IdentificationType
+						// 清除监听
+						uni.$off('IdentificationType');
+					}
+
+				})
 				// 身份证号验证通过
 				if (reg.test(this.idCard)) {
 					this.getPersonOrCarTags()
 				}
 				var main = plus.android.runtimeMainActivity();
-				console.log(main.getIntent())
 				var NfcInit = plus.android.importClass('com.hylink.wwpc.interfaceActivity');
 				var Intent = plus.android.importClass("android.content.Intent")
 				var nfc = new NfcInit();
 				setTimeout(() => {
 					nfc.test(main, Intent);
 				}, 800)
-				console.log('我执行了几次')
 				var _this = this
 				// 监听NFC
 				plus.globalEvent.addEventListener('newintent', function() {
-					console.log('newintent running', _this.Runarguments, JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE);
 					if (JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE == _this.Runarguments) {
 						return
 					} else {
 						setTimeout(() => {
+							_this.Runarguments = ''
 							nfc.nfccreate(main.getIntent())
-						}, 1000)
+						}, 100)
 					}
 					_this.Runarguments = JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE
 				}, false);
@@ -282,13 +289,19 @@
 						//导入类  
 						plus.android.importClass(event);
 						//获取数据
-						if(_this.idCard == JSON.parse(event.getData()).cardNo){
+						if (_this.idCard == JSON.parse(event.getData()).cardNo) {
 							return
-						} 
+						}
 						_this.idCard = JSON.parse(event.getData()).cardNo
+						_this.time = JSON.parse(event.getData()).birth
+						_this.address = JSON.parse(event.getData()).address
+						_this.nation = JSON.parse(event.getData()).ethnicity
+						_this.name = JSON.parse(event.getData()).name
+						_this.sex = JSON.parse(event.getData()).sex
+						uni.$emit("IdentificationType", {
+							"IdentificationType": "intelligent"
+						})
 						_this.getPersonOrCarTags()
-						//获取来源  
-						console.log('event.getData()', event.getSource());
 					}
 				})
 				this.eventManager.addListener("onShow", this.myListener);
@@ -367,12 +380,12 @@
 			},
 			// 输入框值改变
 			inputChange(e) {
-				console.log('改变了吗', 1111, e.detail.value)
 				let reg = this.params == '人员' ?
 					/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/ :
 					/^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/
 				// 身份证号验证通过
 				if (reg.test(e.detail.value)) {
+					this.IdentificationType = ''
 					this.getPersonOrCarTags()
 				}
 			},
@@ -394,7 +407,6 @@
 				// 	"target": this.params == '人员' ? "person" : "car",
 				// 	"type": this.params == '人员' ? "getQGRKList" : "QueryJDC",
 				// }
-				console.log('我应该调用了啊')
 				let condition = {
 					"logicalOperate": "and",
 					"keyValueList": [{
@@ -466,27 +478,33 @@
 					]
 
 				}
-				this.$request('/getTagsInfo', searchInterface(condition), "POST", "middle").then(res => {
+				this.$request('/getTagsInfo', searchInterface(condition, false,
+					'230000000000-3-0100-f63ed79512254e3e926fe7556a975089'), "POST", "middle").then(res => {
 					this.insertTags = res
 					// 打印调用成功回调
 					if (res.data) {
-						let SFZ = res.data.infos[0].SFZH ? res.data.infos[0].SFZH : ''
-						this.name = this.params == '人员' ? (res.data.infos[0].XM ? res.data.infos[0].XM : '') : (res.data.infos[0]
-							.CSYS ? res.data.infos[0].CSYS : '')
-						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (res.data.infos[0].CLPP ?
-							res.data.infos[0].CLPP : '')
-						this.nation = this.params == '人员' ? (res.data.infos[0].MZ ? res.data.infos[0].MZ : '') : (res.data.infos[
-							0].CLLX ? res.data.infos[0].CLLX : '')
-						this.idCardImg = res.data.infos[0].XP ? res.data.infos[0].XP : this.params == '人员' ?
+						let value = JSON.parse(res.data.dataList[0].fieldValues[0].value)
+						if (this.IdentificationType == 'intelligent') {
+							this.tags = value.tags
+							return
+						}
+						let SFZ = value.infos[0].SFZH ? value.infos[0].SFZH : ''
+						this.name = this.params == '人员' ? (value.infos[0].XM ? value.infos[0].XM : '') : (value.infos[0]
+							.CSYS ? value.infos[0].CSYS : '')
+						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (value.infos[0].CLPP ?
+							value.infos[0].CLPP : '')
+						this.nation = this.params == '人员' ? (value.infos[0].MZ ? value.infos[0].MZ : '') : (value.infos[
+							0].CLLX ? value.infos[0].CLLX : '')
+						this.idCardImg = value.infos[0].XP ? value.infos[0].XP : this.params == '人员' ?
 							'../../static/people.png' : '../../static/car.png'
 						this.time = SFZ.substring(6, 10) + "-" + SFZ.substring(10, 12) + "-" + SFZ.substring(12, 14)
-						this.address = res.data.infos[0].ZZXZ ? res.data.infos[0].ZZXZ : ''
-						this.pinCard = res.data.infos[0].CLSBDH ? res.data.infos[0].CLSBDH : '',
-							this.userName = res.data.infos[0].JDCSYR ? res.data.infos[0].JDCSYR : '',
-							this.tel = res.data.infos[0].LXFS ? res.data.infos[0].LXFS : '',
-							this.engine = res.data.infos[0].FDJH ? res.data.infos[0].FDJH : ''
-						this.remark = res.data.infos[0].bz ? res.data.infos[0].bz : ''
-						this.tags = res.data.tags
+						this.address = value.infos[0].ZZXZ ? value.infos[0].ZZXZ : ''
+						this.pinCard = value.infos[0].CLSBDH ? value.infos[0].CLSBDH : '',
+							this.userName = value.infos[0].JDCSYR ? value.infos[0].JDCSYR : '',
+							this.tel = value.infos[0].LXFS ? value.infos[0].LXFS : '',
+							this.engine = value.infos[0].FDJH ? value.infos[0].FDJH : ''
+						this.remark = value.infos[0].bz ? value.infos[0].bz : ''
+						this.tags = value.tags
 					}
 				})
 			},
@@ -530,12 +548,26 @@
 						if (requestCode == 11) {
 							if (_this.params == '人员') {
 								var sfzh = data.getStringExtra("sfzh"); //获取身份证号
-								console.log(sfzh)
+								var json = data.getStringExtra("json") ? JSON.parse(data.getStringExtra("json")) : {};
+								var xm = json.xm; //获取姓名
+								var xb = json.xb; //获取性别
+								var mz = json.mz; //获取民族
+								var csrq = json.csrq; //获取出生日期
+								var csdz = json.csdz; // 获取出生地址
 							} else {
 								var sfzh = data.getStringExtra("number"); //车牌号
 							}
-							console.log(sfzh)
 							_this.idCard = sfzh
+							if (_this.params == '人员') {
+								_this.name = xm
+								_this.sex = xb
+								_this.nation = mz
+								_this.time = csrq
+								_this.address = csdz
+							}
+							uni.$emit("IdentificationType", {
+								"IdentificationType": "intelligent"
+							})
 						}
 					} else {
 						uni.showToast({
@@ -564,7 +596,6 @@
 					sourceType: ['album', 'camera'], //从相册选择
 					success: function(res) {
 						for (let file of res.tempFilePaths) {
-							console.log(file)
 							_this.imgData.push({
 								img: file
 							})
@@ -585,16 +616,14 @@
 			},
 			// 插入人员
 			insertPerson(formData, type, optargetId) {
-				console.log(this.insertTags)
-				let insertTags = this.insertTags
+				let insertTags = JSON.parse(this.insertTags.data.dataList[0].fieldValues[0].value)
 				let checkException = '0'
-				checkException = insertTags.data && insertTags.data.tags[0].property == '111001' ? '1' : '0'
+				checkException = insertTags.tags[0].property == '111001' ? '1' : '0'
 				let data = {
 					...formData,
 					insertTags
 				}
-				console.log(optargetId)
-				db.openDB('data')
+				// db.openDB('data')
 				db.insertData(this, type, oneLine `
 				INSERT INTO collectDataTable ( optargetId, policeIdcard, data, dataType, isUpload, checkException,createdAt )
 				VALUES
@@ -607,7 +636,7 @@
 					${checkException},
 					'${moment().format('YYYY-MM-DD HH:mm:ss')}')
 						`)
-				db.closeDB('data')
+				// db.closeDB('data')
 			},
 			// 填写表单
 			submit(e) {
@@ -666,7 +695,6 @@
 							}
 						})
 					} else {
-						console.log(123123)
 						this.insertPerson(formData, 'custom', optargetId)
 					}
 				} else {

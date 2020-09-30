@@ -10,6 +10,10 @@
 				<image src="../../static/userIcon.png" mode="widthFix"></image>
 			</view>
 		</view>
+		<block v-if="isNotic=='222'">
+			<uni-notice-bar showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
+			</uni-notice-bar>
+		</block>
 		<view class="index_content">
 			<view class="pancha_block">
 				<view class="pancha_left" @click="routerAdd('人员')">
@@ -73,9 +77,13 @@
 					<uni-list>
 						<uni-list-item clickable @click="setBuckle" title="卡口设置" thumb="../../static/weizhi.png" link thumb-size="sm"
 						 :rightText="blckle?blckle:''"></uni-list-item>
+						<uni-list-item clickable @click="routerNotic" title="通知通告" thumb="../../static/tz.png" link thumb-size="sm">
+
+						</uni-list-item>
 						<!-- <uni-list-item title="修改密码" thumb="../../static/mima.png" link thumb-size="sm"></uni-list-item> -->
 						<uni-list-item clickable @click="resetData" title="清除缓存" thumb="../../static/qingchu.png" link thumb-size="sm"></uni-list-item>
-						<uni-list-item title="检查版本" @click="checkVersion" thumb="../../static/gengxin.png" link thumb-size="sm" :rightText="version"></uni-list-item>
+						<uni-list-item title="检查版本" thumb="../../static/gengxin.png" link thumb-size="sm"
+						 :rightText="version"></uni-list-item>
 					</uni-list>
 				</view>
 				<view class="ogOut_block">
@@ -115,14 +123,15 @@
 				blckle: '',
 				userinfo: getCredential().userCredential,
 				updateId: '',
-				version: plus.runtime.version
+				version: plus.runtime.version,
+				isNotic: ''
 			}
 		},
 		components: {
 			uniPopupDialog
 		},
 		onShow() {
-			db.openDB('data')
+			// db.openDB('data')
 			db.SelectData(this, 'person', oneLine `
 				select count(1) as count  from collectDataTable where dataType=15 and date(createdAt) =  date('now')
 			`,
@@ -131,7 +140,10 @@
 				select count(1) as count from collectDataTable where dataType=16 and date(createdAt) =  date('now')
 			`,
 				true)
-			db.closeDB('data')
+			uni.$on('isRead',(data)=>{
+			        this.isNotic = data;  
+			  })
+			// db.closeDB('data')
 		},
 		onLoad(option) {
 			// 初始化升级服务器组件
@@ -176,7 +188,7 @@
 				uni.showLoading({
 					title: '清除数据中'
 				})
-				db.openDB('data')
+				// db.openDB('data')
 				db.deleteTable('collectDataTable')
 				db.SelectData(this, 'person', oneLine `
 					select count(1) as count  from collectDataTable where dataType=15 and date(createdAt) =  date('now')
@@ -186,7 +198,7 @@
 					select count(1) as count from collectDataTable where dataType=16 and date(createdAt) =  date('now')
 				`,
 					true)
-				db.closeDB('data')
+				// db.closeDB('data')
 				uni.clearStorage()
 				this.blckle = ''
 				uni.hideLoading()
@@ -279,6 +291,11 @@
 					url: `/pages/buckle/buckle?type=${this.blckle}`
 				})
 			},
+			routerNotic() {
+				uni.navigateTo({
+					url: `/pages/noticList/index`
+				})
+			},
 			handleClick() {
 				this.$refs.drawer.open();
 			},
@@ -289,13 +306,13 @@
 			},
 			routerAdd(type) {
 				// 主要为了测试
-				// if (uni.getStorageSync('buckle') == '') {
-				// 	uni.showToast({
-				// 		title: '请先选择卡点',
-				// 		icon: 'none'
-				// 	})
-				// 	return
-				// }
+				if (uni.getStorageSync('buckle') == '') {
+					uni.showToast({
+						title: '请先选择卡点',
+						icon: 'none'
+					})
+					return
+				}
 				uni.navigateTo({
 					url: `/pages/personCheck/index?type=${type}`
 				});

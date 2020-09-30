@@ -33,15 +33,15 @@ export const getuuid = () => {
 // 移动警务查询类接口改造
 export const searchInterface = (condition = {
 	logicalOperate: 'and',
-	keyValueList: [],
-}, isPage = false) => {
+	keyValueList: []
+}, isPage = false, resource_id) => {
 	let basic = {
 		parameter: {
-			dataObjId: getCredential().appCredential ? getCredential().appCredential.load.appInfo.appId : '',
-			regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.regionalismCode : '',
+			dataObjId: getCredential().appCredential ? resource_id : '',
+			regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.orgId : '',
 			networkCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.networkAreaCode : '3',
 			condition: condition,
-			fields: '',
+			fields: 'list',
 			page: {
 				pageSize: isPage ? isPage : 1,
 				pageNo: isPage ? isPage : '1'
@@ -62,9 +62,14 @@ export const operationInterface = (data) => {
 				operationType: 1,
 				operationId: getuuid(),
 				dataObjId: getCredential().appCredential ? getCredential().appCredential.load.appInfo.appId : '',
-				regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.regionalismCode : '',
+				regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.orgId : '',
 				networkCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.networkAreaCode : '3',
-				data: data,
+				data: [{
+					"fieldValues": [{
+						"field": "data",
+						"value": data
+					}]
+				}],
 				condition: null,
 			}]
 		},

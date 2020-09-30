@@ -36,7 +36,20 @@
 		"style": {
 			"navigationBarTitleText": "在线核查"
 		}
-	}],
+	},
+	{
+		"path": "pages/noticList/index",
+		"style": {
+			"navigationBarTitleText": "警情通知"
+		}
+	},{
+            "path" : "pages/noticList/noticDetail",
+            "style" : {
+				"navigationBarTitleText": "通知详情"
+				// "backgroundColor":"#F8F8F8"
+			}
+        }
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
 		"navigationBarTitleText": "维稳核查",

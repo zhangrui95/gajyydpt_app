@@ -149,19 +149,20 @@
 				]
 
 			}
-			this.$request('/getDataInfo', searchInterface(condition), "POST", "middle").then(res => {
-				if (res.data) {
-					console.log(res.data.dataList)
-					this.basic_info = res.data.dataList[0].tags
+			this.$request('/getDataInfo', searchInterface(condition,false,'230000000000-3-0100-b4e0d2be5dd147e49adc8e6ae4addac2'), "POST", "middle").then(res => {
+				if (res.data.dataList[0]) {
+					let value = JSON.parse(res.data.dataList[0].fieldValues[0].value)
+					console.log(JSON.parse(res.data.dataList[0].fieldValues[0].value))
+					this.basic_info = value[0].tags
 					let contentMiddle = []
 					let basicMiddle = []
-					for (let item of res.data.dataList[1].tags) {
+					for (let item of value[1].tags) {
 						if (item.haveData == true) {
 							this.haveDataList.push(item)
 							contentMiddle.push(item.data[0])
 						}
 					}
-					for (let item of res.data.dataList[0].tags) {
+					for (let item of value[0].tags) {
 						if (item.haveData == true) {
 							this.haveBasicList.push(item)
 							basicMiddle.push(item.data[0])
