@@ -81,11 +81,11 @@
 				</view>
 			</view>
 			<view class="content_footer" v-if="params=='人员'">
-				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线盘查</button>
+				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
 				<!-- <button class="btn" type="default">人像比对</button> -->
 			</view>
 			<view class="content_footer" v-if="params=='车辆'">
-				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线盘查</button>
+				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
 			</view>
 		</view>
 		<!-- 车辆特有添加人员 -->

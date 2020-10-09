@@ -34,7 +34,7 @@
 	}, {
 		"path": "pages/onlineCheck/onlineCheck",
 		"style": {
-			"navigationBarTitleText": "在线盘查"
+			"navigationBarTitleText": "在线核查"
 		}
 	},
 	{
