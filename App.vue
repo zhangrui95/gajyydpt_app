@@ -167,12 +167,10 @@
 		onShow: function() {
 			this.time = setInterval(this.uploadData, 10000)
 			// this.timeGetNotice = setInterval(this.getNotice, 120000)
-			// setInterval(() => {
-			// 	this.getNotice
-			// }, 10000)
 		},
 		onHide: function() {
 			clearInterval(this.time)
+			// clearInterval(this.timeGetNotice)
 			console.log('App Hide');
 		},
 		methods: {
@@ -191,6 +189,8 @@
 					if (res.code == 200) {
 						if (res.data = true) {
 							uni.$emit('isRead', '222');
+						} else {
+							uni.$emit('isRead', '111');
 						}
 					}
 				})

@@ -24,7 +24,7 @@
 		"path": "pages/personCheck/index",
 		"style": {
 			"navigationStyle": "custom"
-			// "navigationBarTitleText": "人员核查"
+			// "navigationBarTitleText": "人员盘查"
 		}
 	}, {
 		"path": "pages/buckle/buckle",
@@ -34,7 +34,7 @@
 	}, {
 		"path": "pages/onlineCheck/onlineCheck",
 		"style": {
-			"navigationBarTitleText": "在线核查"
+			"navigationBarTitleText": "在线盘查"
 		}
 	},
 	{
@@ -52,7 +52,7 @@
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
-		"navigationBarTitleText": "维稳核查",
+		"navigationBarTitleText": "维稳盘查",
 		"navigationBarBackgroundColor": "#45AFDF",
 		"backgroundColor": "#FFFFFF"
 	}

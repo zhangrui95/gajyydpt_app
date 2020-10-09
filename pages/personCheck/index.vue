@@ -1,12 +1,14 @@
 <template>
 	<view class="person_container">
 		<view>
-			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft" background-color="#45AFDF"
-			 left-icon="back" right-icon="camera" :title="params=='人员'?'人员核查':'车辆核查'">
+			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft"
+				background-color="#45AFDF" left-icon="back" right-icon="camera" :title="params=='人员'?'人员盘查':'车辆盘查'">
 			</uni-nav-bar>
 		</view>
-		<uni-notice-bar showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
-		</uni-notice-bar>
+		<block v-if="isNotic=='222'">
+			<uni-notice-bar @click.native="routerNotic('notic')" showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
+			</uni-notice-bar>
+		</block>
 		<view class="idcard_title" v-html="params=='人员'?'二代身份证采集':'车辆采集'">
 
 		</view>
@@ -35,7 +37,7 @@
 		<view class="content_info">
 			<view class="content_header">
 				<view class="content_header_left">
-					<image @click="preview(idCardImg)" class="imageTouXiang" :src="idCardImg" mode="">
+					<image class="imageTouXiang" :src="idCardImg" mode="">
 					</image>
 				</view>
 				<view class="content_header_right">
@@ -79,11 +81,11 @@
 				</view>
 			</view>
 			<view class="content_footer" v-if="params=='人员'">
-				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
+				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线盘查</button>
 				<!-- <button class="btn" type="default">人像比对</button> -->
 			</view>
 			<view class="content_footer" v-if="params=='车辆'">
-				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
+				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线盘查</button>
 			</view>
 		</view>
 		<!-- 车辆特有添加人员 -->
@@ -123,7 +125,8 @@
 				</view>
 				<view class="content_img" v-for="(item,index) in imgData" :key="index">
 					<!-- <view>{{item[index]}}</view> -->
-					<image @longtap="longtap(index)" @click="preview(item.img)" style="width:100%; height:100% " :src="item.img" mode="">
+					<image @longtap="longtap(index)" @click="preview(item.img)" style="width:100%; height:100% " :src="item.img"
+						mode="">
 					</image>
 					<!-- <uni-icons @click="deletePhoto(index)" class="delete_icon" type="clear" color="red" size="16"></uni-icons> -->
 				</view>
@@ -148,8 +151,8 @@
 			</button>
 		</view>
 		<uni-popup id="popupDialog" ref="popupDialog" type="dialog">
-			<uni-popup-dialog title="" content="此操作不会保存当前的数据,是否继续?" :before-close="true" @confirm="dialogConfirm" @close="dialogClose"
-			 :reset="'否'" :submit="'是'"></uni-popup-dialog>
+			<uni-popup-dialog title="" content="此操作不会保存当前的数据,是否继续?" :before-close="true" @confirm="dialogConfirm"
+				@close="dialogClose" :reset="'否'" :submit="'是'"></uni-popup-dialog>
 		</uni-popup>
 		<!-- <uni-popup id="popupDelete" ref="popupDelete" type="dialog">
 			<uni-popup-dialog title="" content="是否要删除此图片?" :before-close="true" @confirm="dialogDelete" @close="dialogClose"
@@ -197,13 +200,17 @@
 				address: '',
 				idCardImg: '',
 				Runarguments: '',
-				IdentificationType: ''
+				IdentificationType: '',
+				isNotic: ''
 			}
 		},
 		onShow() {
 			let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
 			var curRoute = routes[routes.length - 1].route //获取当前页面路由
 			let curParam = routes[routes.length - 1].options; //获取路由参数
+			uni.$on('isRead', (data) => {
+				this.isNotic = data;
+			})
 			if (curParam.type == '车辆') {
 				this.idCardImg = '../../static/car.png'
 				uni.$on("handClickBack", res => {
@@ -243,7 +250,7 @@
 				}, 800)
 				var _this = this
 				// 监听NFC
-				plus.globalEvent.addEventListener('newintent', function() {
+				plus.globalEvent.addEventListener('newintent', function () {
 					if (JSON.parse(plus.runtime.arguments).extra_nfc_TAG_HANDLE == _this.Runarguments) {
 						return
 					} else {
@@ -263,16 +270,16 @@
 			this.eventManager = this.myEventManager.getMyEventManager();
 			this.eventManager.removeListener("onShow");
 		},
-		onUnload: function() {
+		onUnload: function () {
 			console.log('卸载组件')
 			this.eventManager = this.myEventManager.getMyEventManager();
 			this.eventManager.removeListener("onShow");
 		},
-		onLoad: function(option) {
+		onLoad: function (option) {
 			this.params = option.type
 			this.source = option.source
 			uni.setNavigationBarTitle({
-				title: `${option.type}核查`
+				title: `${option.type}盘查`
 			})
 			if (option.type == '人员') {
 
@@ -285,7 +292,7 @@
 				//新建监听器
 				var _this = this
 				this.myListener = plus.android.implements("com.hylink.wwpc.MyListener", {
-					onChange: function(event) {
+					onChange: function (event) {
 						//导入类  
 						plus.android.importClass(event);
 						//获取数据
@@ -326,15 +333,23 @@
 			uniPopupDialog
 		},
 		methods: {
+			routerNotic(params) {
+				if (params == 'notic') {
+					uni.navigateTo({
+						url: `/pages/noticList/index`
+					})
+					uni.$emit('isRead', '111');
+				}
+			},
 			longtap(index) {
 				let that = this;
 				uni.showModal({
 					title: '删除',
 					content: '请问是要删除这张照片吗？',
-					success: function(res) {
+					success: function (res) {
 						if (res.confirm) {
 							that.imgData.splice(index, 1)
-						} else if (res.cancel) {}
+						} else if (res.cancel) { }
 					}
 				});
 			},
@@ -343,10 +358,10 @@
 				uni.showModal({
 					title: '删除',
 					content: '请问要删除此项？',
-					success: function(res) {
+					success: function (res) {
 						if (res.confirm) {
 							that.personData.splice(index, 1)
-						} else if (res.cancel) {}
+						} else if (res.cancel) { }
 					}
 				});
 			},
@@ -355,8 +370,8 @@
 				uni.previewImage({
 					urls: [img],
 					longPressActions: {
-						success: function(data) {},
-						fail: function(err) {}
+						success: function (data) { },
+						fail: function (err) { }
 					}
 				});
 			},
@@ -374,7 +389,7 @@
 				done()
 			},
 			// 下拉框值改变
-			bindPickerChange: function(e) {
+			bindPickerChange: function (e) {
 				this.index = e.detail.value
 				// this.getPersonOrCarTags()
 			},
@@ -410,103 +425,105 @@
 				let condition = {
 					"logicalOperate": "and",
 					"keyValueList": [{
-							"key": "appCode",
-							"relationOperator": "=",
-							"value": "'hlk-wwhc'"
-						},
-						{
-							"key": "devAddress",
-							"relationOperator": "=",
-							"value": "192.168.0.1"
-						},
-						{
-							"key": "devId",
-							"relationOperator": "=",
-							"value": "A1W56R4G654G65W4H"
-						},
-						{
-							"key": "hphm",
-							"relationOperator": "=",
-							"value": this.params == '人员' ? "string" : this.idCard
-						},
-						{
-							"key": "hpzl",
-							"relationOperator": "=",
-							"value": this.params == '人员' ? "string" : ''
-						},
-						{
-							"key": "jybmbh",
-							"relationOperator": "=",
-							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
-						}, {
-							"key": "jycode",
-							"relationOperator": "=",
-							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
-						},
-						{
-							"key": "jysfzh",
-							"relationOperator": "=",
-							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : ''
-						}, {
-							"key": "jyxm",
-							"relationOperator": "=",
-							"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.xm : ''
-						},
-						{
-							"key": "locationId",
-							"relationOperator": ">",
-							"value": "230000000000"
-						}, {
-							"key": "name",
-							"relationOperator": "=",
-							"value": "string"
-						},
-						{
-							"key": "sfzh",
-							"relationOperator": "=",
-							"value": this.idCard
-						}, {
-							"key": "target",
-							"relationOperator": "=",
-							"value": this.params == '人员' ? "person" : "car",
-						},
-						{
-							"key": "type",
-							"relationOperator": "=",
-							"value": this.params == '人员' ? "getQGRKList" : "QueryJDC"
-						}
+						"key": "appCode",
+						"relationOperator": "=",
+						"value": "'hlk-wwhc'"
+					},
+					{
+						"key": "devAddress",
+						"relationOperator": "=",
+						"value": "192.168.0.1"
+					},
+					{
+						"key": "devId",
+						"relationOperator": "=",
+						"value": "A1W56R4G654G65W4H"
+					},
+					{
+						"key": "hphm",
+						"relationOperator": "=",
+						"value": this.params == '人员' ? "string" : this.idCard
+					},
+					{
+						"key": "hpzl",
+						"relationOperator": "=",
+						"value": this.params == '人员' ? "string" : ''
+					},
+					{
+						"key": "jybmbh",
+						"relationOperator": "=",
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
+					}, {
+						"key": "jycode",
+						"relationOperator": "=",
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
+					},
+					{
+						"key": "jysfzh",
+						"relationOperator": "=",
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : ''
+					}, {
+						"key": "jyxm",
+						"relationOperator": "=",
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.xm : ''
+					},
+					{
+						"key": "locationId",
+						"relationOperator": ">",
+						"value": "230000000000"
+					}, {
+						"key": "name",
+						"relationOperator": "=",
+						"value": "string"
+					},
+					{
+						"key": "sfzh",
+						"relationOperator": "=",
+						"value": this.idCard
+					}, {
+						"key": "target",
+						"relationOperator": "=",
+						"value": this.params == '人员' ? "person" : "car",
+					},
+					{
+						"key": "type",
+						"relationOperator": "=",
+						"value": this.params == '人员' ? "getQGRKList" : "QueryJDC"
+					}
 					]
 
 				}
 				this.$request('/getTagsInfo', searchInterface(condition, false,
 					'230000000000-3-0100-f63ed79512254e3e926fe7556a975089'), "POST", "middle").then(res => {
-					this.insertTags = res
-					// 打印调用成功回调
-					if (res.data) {
-						let value = JSON.parse(res.data.dataList[0].fieldValues[0].value)
-						if (this.IdentificationType == 'intelligent') {
+						this.insertTags = res
+						// 打印调用成功回调
+						if (res.data) {
+							let value = JSON.parse(res.data.dataList[0].fieldValues[0].value)
+							if (this.IdentificationType == 'intelligent') {
+								this.tags = value.tags
+								this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,' + value.infos[0].XP : this.params == '人员' ?
+								'../../static/people.png' : '../../static/car.png'
+								return
+							}
+							let SFZ = value.infos[0].SFZH ? value.infos[0].SFZH : ''
+							this.name = this.params == '人员' ? (value.infos[0].XM ? value.infos[0].XM : '') : (value.infos[0]
+								.CSYS ? value.infos[0].CSYS : '')
+							this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (value.infos[0].CLPP1 ?
+								value.infos[0].CLPP1 : '')
+							this.nation = this.params == '人员' ? (value.infos[0].MZ ? value.infos[0].MZ : '') : (value.infos[
+								0].CLLX ? value.infos[0].CLLX : '')
+							this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,' + value.infos[0].XP : this.params == '人员' ?
+								'../../static/people.png' : '../../static/car.png'
+							this.time = SFZ.substring(6, 10) + "-" + SFZ.substring(10, 12) + "-" + SFZ.substring(12, 14)
+							this.address = value.infos[0].ZZXZ ? value.infos[0].ZZXZ : ''
+							this.pinCard = value.infos[0].CLSBDH ? value.infos[0].CLSBDH : '',
+								this.userName = value.infos[0].JDCSYR ? value.infos[0].JDCSYR : '',
+								this.tel = value.infos[0].LXFS ? value.infos[0].LXFS : '',
+								this.engine = value.infos[0].FDJH ? value.infos[0].FDJH : ''
+							this.remark = value.infos[0].bz ? value.infos[0].bz : ''
 							this.tags = value.tags
-							return
 						}
-						let SFZ = value.infos[0].SFZH ? value.infos[0].SFZH : ''
-						this.name = this.params == '人员' ? (value.infos[0].XM ? value.infos[0].XM : '') : (value.infos[0]
-							.CSYS ? value.infos[0].CSYS : '')
-						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (value.infos[0].CLPP1 ?
-							value.infos[0].CLPP1 : '')
-						this.nation = this.params == '人员' ? (value.infos[0].MZ ? value.infos[0].MZ : '') : (value.infos[
-							0].CLLX ? value.infos[0].CLLX : '')
-						this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,'+value.infos[0].XP : this.params == '人员' ?
-							'../../static/people.png' : '../../static/car.png'
-						this.time = SFZ.substring(6, 10) + "-" + SFZ.substring(10, 12) + "-" + SFZ.substring(12, 14)
-						this.address = value.infos[0].ZZXZ ? value.infos[0].ZZXZ : ''
-						this.pinCard = value.infos[0].CLSBDH ? value.infos[0].CLSBDH : '',
-							this.userName = value.infos[0].JDCSYR ? value.infos[0].JDCSYR : '',
-							this.tel = value.infos[0].LXFS ? value.infos[0].LXFS : '',
-							this.engine = value.infos[0].FDJH ? value.infos[0].FDJH : ''
-						this.remark = value.infos[0].bz ? value.infos[0].bz : ''
-						this.tags = value.tags
-					}
-				})
+					})
 			},
 			// 返回
 			clickLeft() {
@@ -525,8 +542,8 @@
 			// OCR识别
 			clickRight() {
 				if (!plus.runtime.isApplicationExist({
-						"pname": "com.xdja.zdsb"
-					})) {
+					"pname": "com.xdja.zdsb"
+				})) {
 					uni.showToast({
 						title: '当前手机没有安装OCR组件,需要去应用中心进行安装',
 						icon: 'none'
@@ -543,7 +560,7 @@
 					intent.putExtra("sfzbs", 0);
 				}
 				main.startActivityForResult(intent, 11);
-				main.onActivityResult = function(requestCode, resultCode, data) {
+				main.onActivityResult = function (requestCode, resultCode, data) {
 					if (resultCode == '-1') {
 						if (requestCode == 11) {
 							if (_this.params == '人员') {
@@ -594,7 +611,7 @@
 					count: 6, //默认9
 					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 					sourceType: ['album', 'camera'], //从相册选择
-					success: function(res) {
+					success: function (res) {
 						for (let file of res.tempFilePaths) {
 							_this.imgData.push({
 								img: file
@@ -624,7 +641,7 @@
 					insertTags
 				}
 				// db.openDB('data')
-				db.insertData(this, type, oneLine `
+				db.insertData(this, type, oneLine`
 				INSERT INTO collectDataTable ( optargetId, policeIdcard, data, dataType, isUpload, checkException,createdAt )
 				VALUES
 					(
@@ -642,18 +659,18 @@
 			submit(e) {
 				//定义表单规则
 				var rule = [{
-						name: "idCard",
-						checkType: "notnull",
-						checkRule: "",
-						errorMsg: this.params == '人员' ? "身份证号不能为空" : "车牌号码不能为空"
-					},
-					{
-						name: "idCard",
-						checkType: "reg",
-						checkRule: this.params == '人员' ?
-							/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/ : /^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/,
-						errorMsg: this.params == '人员' ? "请输入正确的身份证号" : "请输入正确的车牌号码"
-					}
+					name: "idCard",
+					checkType: "notnull",
+					checkRule: "",
+					errorMsg: this.params == '人员' ? "身份证号不能为空" : "车牌号码不能为空"
+				},
+				{
+					name: "idCard",
+					checkType: "reg",
+					checkRule: this.params == '人员' ?
+						/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/ : /^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/,
+					errorMsg: this.params == '人员' ? "请输入正确的身份证号" : "请输入正确的车牌号码"
+				}
 				];
 				//进行表单检查
 				var formData = {
@@ -685,7 +702,7 @@
 						/* 使用这种方式跳转不刷新 */
 						uni.navigateBack({
 							delta: 1,
-							success: function() {
+							success: function () {
 								uni.$emit("handClickBack", {
 									info: {
 										...formData,

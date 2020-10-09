@@ -66,6 +66,10 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 				if (res.networkType != 'none') {
 					uni.setStorageSync('networkType', 'yes')
 					if (upLoadType == 'file') {
+						uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 						uni.uploadFile({
 							url: requestUrl, //仅为示例，非真实的接口地址
 							filePath: fileAddr,
@@ -82,7 +86,10 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 							reject(err)
 						});
 					} else {
-						console.log(requestUrl)
+						uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 						uni.request({
 							method: type,
 							url: requestUrl,

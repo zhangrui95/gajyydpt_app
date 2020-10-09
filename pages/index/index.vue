@@ -11,7 +11,7 @@
 			</view>
 		</view>
 		<block v-if="isNotic=='222'">
-			<uni-notice-bar showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
+			<uni-notice-bar @click.native="routerNotic('notic')" showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
 			</uni-notice-bar>
 		</block>
 		<view class="index_content">
@@ -21,7 +21,7 @@
 						<image src="../../static/renyuan.png" mode="widthFix"></image>
 					</view>
 					<view class="text_block">
-						<text class="jiahao">+</text> <text class="wenzi">人员核查</text>
+						<text class="jiahao">+</text> <text class="wenzi">人员盘查</text>
 					</view>
 				</view>
 				<view class="pancha_right" @click="routerNav('人员')">
@@ -29,7 +29,7 @@
 						{{personNum}}
 					</view>
 					<view class="history_text">
-						人员核查历史
+						人员盘查历史
 					</view>
 				</view>
 			</view>
@@ -39,7 +39,7 @@
 						<image src="../../static/che.png" mode="widthFix"></image>
 					</view>
 					<view class="text_block">
-						<text class="jiahao">+</text> <text class="wenzi">车辆核查</text>
+						<text class="jiahao">+</text> <text class="wenzi">车辆盘查</text>
 					</view>
 				</view>
 				<view class="pancha_right" @click="routerNav('车辆')">
@@ -47,7 +47,7 @@
 						{{carNum}}
 					</view>
 					<view class="history_text">
-						车辆核查历史
+						车辆盘查历史
 					</view>
 				</view>
 			</view>
@@ -82,8 +82,7 @@
 						</uni-list-item>
 						<!-- <uni-list-item title="修改密码" thumb="../../static/mima.png" link thumb-size="sm"></uni-list-item> -->
 						<uni-list-item clickable @click="resetData" title="清除缓存" thumb="../../static/qingchu.png" link thumb-size="sm"></uni-list-item>
-						<uni-list-item title="检查版本" thumb="../../static/gengxin.png" link thumb-size="sm"
-						 :rightText="version"></uni-list-item>
+						<uni-list-item title="检查版本" thumb="../../static/gengxin.png" link thumb-size="sm" :rightText="version"></uni-list-item>
 					</uni-list>
 				</view>
 				<view class="ogOut_block">
@@ -140,18 +139,18 @@
 				select count(1) as count from collectDataTable where dataType=16 and date(createdAt) =  date('now')
 			`,
 				true)
-			uni.$on('isRead',(data)=>{
-			        this.isNotic = data;  
-			  })
+			uni.$on('isRead', (data) => {
+				this.isNotic = data;
+			})
 			// db.closeDB('data')
 		},
 		onLoad(option) {
 			// 初始化升级服务器组件
-			var main = plus.android.runtimeMainActivity();
-			console.log('main', main)
-			var updateApp = plus.android.importClass('com.hylink.wwpc.updateApp');
-			var update = new updateApp();
-			update.checkInit(main)
+			// var main = plus.android.runtimeMainActivity();
+			// console.log('main', main)
+			// var updateApp = plus.android.importClass('com.hylink.wwpc.updateApp');
+			// var update = new updateApp();
+			// update.checkInit(main)
 			var _this = this
 			uni.getStorage({
 				key: 'buckle',
@@ -291,10 +290,13 @@
 					url: `/pages/buckle/buckle?type=${this.blckle}`
 				})
 			},
-			routerNotic() {
+			routerNotic(params) {
 				uni.navigateTo({
 					url: `/pages/noticList/index`
 				})
+				if (params == 'notic') {
+					uni.$emit('isRead', '111');
+				}
 			},
 			handleClick() {
 				this.$refs.drawer.open();

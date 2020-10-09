@@ -2,8 +2,8 @@
 	<view>
 		<!-- 上方展示 -->
 		<view>
-			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft" background-color="#45AFDF"
-			 left-icon="back" right-text="筛选" :title="params=='人员'?'人员核查历史':'车辆核查历史'">
+			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft"
+				background-color="#45AFDF" left-icon="back" right-text="筛选" :title="params=='人员'?'人员盘查历史':'车辆盘查历史'">
 			</uni-nav-bar>
 		</view>
 		<view class="view_header">
@@ -12,13 +12,16 @@
 			<view class="">今日盘查数:{{checkToday}}</view>
 			<view class="">今日异常数:{{checkExceptionToady}}</view>
 		</view>
-		<uni-notice-bar showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
-		</uni-notice-bar>
+		<block v-if="isNotic=='222'">
+			<uni-notice-bar @click.native="routerNotic('notic')" showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
+			</uni-notice-bar>
+		</block>
 		<uni-list :border="true">
 			<!-- 右侧带角标 -->
-			<uni-list-chat v-for="(item,index) in dataList" :key="index" :title="params=='人员'?'姓名:'+item.data.name:item.data['idCard']"
-			 :status="item.checkException" :avatar="item.data.idCardImg?item.data.idCardImg:params=='人员'?'../../static/people.png':'../../static/car.png'"
-			 :note="params=='人员'?'<div>身份证号:'+item.data['idCard']+'</div><div>采集时间:'+item.createdAt+'</div>':'<div>人员数量:'+item.data['personData'].length+'</div><div>采集时间:'+item.createdAt+'</div>'">
+			<uni-list-chat v-for="(item,index) in dataList" :key="index"
+				:title="params=='人员'?'姓名:'+item.data.name:item.data['idCard']" :status="item.checkException"
+				:avatar="item.data.idCardImg?item.data.idCardImg:params=='人员'?'../../static/people.png':'../../static/car.png'"
+				:note="params=='人员'?'<div>身份证号:'+item.data['idCard']+'</div><div>采集时间:'+item.createdAt+'</div>':'<div>人员数量:'+item.data['personData'].length+'</div><div>采集时间:'+item.createdAt+'</div>'">
 
 				<view v-if="item.isUpload==0" class="chat-custom-right">
 					<uni-icons @click="uploadData(item,item.optargetId)" type="cloud-upload-filled" color="#FF6C00" size="26">
@@ -37,7 +40,8 @@
 				</view>
 				<view class="">
 					<radio-group @change="radioChange" class="sunui-radio-group">
-						<label v-for="(item,index) in radio" :key="index" class="sunui-radio-label" :class="item.checked ? 'sunui-radio-checkd' : ''">
+						<label v-for="(item,index) in radio" :key="index" class="sunui-radio-label"
+							:class="item.checked ? 'sunui-radio-checkd' : ''">
 							<radio :value="item.value" :checked="item.checked" />
 							<text>{{item.name}}</text>
 						</label>
@@ -71,11 +75,12 @@
 					</view>
 				</view>
 				<view class="drawer_footer">
-					<button @click="searchSubmit" style="background: linear-gradient(#3AC7DE, #548DE4);" type="default" class="drawer_btn">
+					<button @click="searchSubmit" style="background: linear-gradient(#3AC7DE, #548DE4);" type="default"
+						class="drawer_btn">
 						搜索
 					</button>
-					<button @click="resetSubmit" style="background: linear-gradient(#FFBF32, #F88C56);margin-left: 80rpx;" type="default"
-					 class="drawer_btn">
+					<button @click="resetSubmit" style="background: linear-gradient(#FFBF32, #F88C56);margin-left: 80rpx;"
+						type="default" class="drawer_btn">
 						重置
 					</button>
 				</view>
@@ -142,6 +147,7 @@
 				checkExceptionToady: 0,
 				radioValue: '0',
 				imgData: [], // 网络路径
+				isNotic: '',
 				radio: [{
 					name: '全部',
 					value: '0',
@@ -161,29 +167,40 @@
 			// db.openDB('data')
 			this.selectList('noSearch')
 			// 盘查总数
-			db.SelectCheck(this, oneLine `select count(1) as checkCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15}`,
+			db.SelectCheck(this, oneLine`select count(1) as checkCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15}`,
 				'checkCount')
 			// 异常总数
-			db.SelectCheck(this, oneLine `select count(1) as checkExceptionCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and checkException!=0`,
+			db.SelectCheck(this, oneLine`select count(1) as checkExceptionCount from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and checkException!=0`,
 				'checkExceptionCount')
 			// 今日盘查数
-			db.SelectCheck(this, oneLine `select count(1) as checkToday from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now')`,
+			db.SelectCheck(this, oneLine`select count(1) as checkToday from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now')`,
 				'checkToday')
 			// 今日异常数
-			db.SelectCheck(this, oneLine `select count(1) as checkExceptionToady from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now') and checkException!=0`,
+			db.SelectCheck(this, oneLine`select count(1) as checkExceptionToady from collectDataTable where dataType=${this.params == '车辆' ? 16 : 15} and date(createdAt) =  date('now') and checkException!=0`,
 				'checkExceptionToady')
 			// db.closeDB('data')
+			uni.$on('isRead', (data) => {
+				this.isNotic = data;
+			})
 		},
-		onLoad: function(option) {
+		onLoad: function (option) {
 			this.params = option.type
 			uni.setNavigationBarTitle({
-				title: `${option.type}核查历史`
+				title: `${option.type}盘查历史`
 			})
 		},
 		methods: {
+			routerNotic(params) {
+				if (params == 'notic') {
+					uni.navigateTo({
+						url: `/pages/noticList/index`
+					})
+					uni.$emit('isRead', '111');
+				}
+			},
 			selectList(type) {
 				let search = this.search ? this.search.value : ''
-				db.SelectData(this, 'person', oneLine `
+				db.SelectData(this, 'person', oneLine`
 				SELECT
 					data,
 					createdAt,
@@ -275,24 +292,24 @@
 				console.log(getPatrolInquiriesJson(data, this.params))
 				this.$request('/save', operationInterface(getPatrolInquiriesJson(data, this.params),
 					'230000000000-3-0600-2d85c929e85d4d21bd7c43f5ea0bf135'), "POST", "htdz").then(res => {
-					console.log(res)
-					if (res.code == 200) {
-						// 将本条数据更新
-						// db.openDB('data')
-						db.updataSql(
-							`UPDATE collectDataTable SET isUpload = '1' WHERE optargetId = '${optargetId}'`)
-						this.selectList()
-						// db.closeDB('data')
-						uni.showToast({
-							title: '上传成功'
-						});
-					} else {
-						uni.showToast({
-							title: '上传失败',
-							icon: 'none'
-						});
-					}
-				})
+						console.log(res)
+						if (res.code == 200) {
+							// 将本条数据更新
+							// db.openDB('data')
+							db.updataSql(
+								`UPDATE collectDataTable SET isUpload = '1' WHERE optargetId = '${optargetId}'`)
+							this.selectList()
+							// db.closeDB('data')
+							uni.showToast({
+								title: '上传成功'
+							});
+						} else {
+							uni.showToast({
+								title: '上传失败',
+								icon: 'none'
+							});
+						}
+					})
 			},
 			clickLeft() {
 				uni.navigateBack({
@@ -308,16 +325,16 @@
 				this.$forceUpdate();
 				this.radioValue = e.detail.value
 			},
-			bindDateChange: function(e) {
+			bindDateChange: function (e) {
 				this.date = e.detail.value
 			},
-			bindTimeChange: function(e) {
+			bindTimeChange: function (e) {
 				this.time = e.detail.value
 			},
-			bindDateChange1: function(e) {
+			bindDateChange1: function (e) {
 				this.date1 = e.detail.value
 			},
-			bindTimeChange1: function(e) {
+			bindTimeChange1: function (e) {
 				this.time1 = e.detail.value
 			}
 		}

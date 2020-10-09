@@ -142,7 +142,7 @@
 										writer.write(JSON.stringify({
 											sid: 'c5516ec3-5965-4803-874c-799239049cdb',
 											aqzx: `http://192.168.3.51:8100`, // 安全中心地址
-											hddz: `http://${that.address}:${that.port}`, // 维稳核查
+											hddz: `http://${that.address}:${that.port}`, // 维稳盘查
 											middle: `http://192.168.104.245:7005`
 										}));
 									})
