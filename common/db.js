@@ -73,7 +73,6 @@ function SelectData(that, type, sql, ifCount,callback) {
 	if (!isOpen) {
 		openDB('data')
 	}
-	console.log(sql)
 	plus.sqlite.selectSql({
 		name: 'data',
 		sql: sql,

@@ -35,7 +35,7 @@
 		<view class="content_info">
 			<view class="content_header">
 				<view class="content_header_left">
-					<image class="imageTouXiang" :src="idCardImg" mode="">
+					<image @click="preview(idCardImg)" class="imageTouXiang" :src="idCardImg" mode="">
 					</image>
 				</view>
 				<view class="content_header_right">
@@ -195,7 +195,7 @@
 				engine: '',
 				remark: '',
 				address: '',
-				idCardImg: '../../static/people.png',
+				idCardImg: '',
 				Runarguments: '',
 				IdentificationType: ''
 			}
@@ -491,11 +491,11 @@
 						let SFZ = value.infos[0].SFZH ? value.infos[0].SFZH : ''
 						this.name = this.params == '人员' ? (value.infos[0].XM ? value.infos[0].XM : '') : (value.infos[0]
 							.CSYS ? value.infos[0].CSYS : '')
-						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (value.infos[0].CLPP ?
-							value.infos[0].CLPP : '')
+						this.sex = this.params == '人员' ? (parseInt(SFZ.substr(16, 1)) % 2 == 1 ? '男' : '女') : (value.infos[0].CLPP1 ?
+							value.infos[0].CLPP1 : '')
 						this.nation = this.params == '人员' ? (value.infos[0].MZ ? value.infos[0].MZ : '') : (value.infos[
 							0].CLLX ? value.infos[0].CLLX : '')
-						this.idCardImg = value.infos[0].XP ? value.infos[0].XP : this.params == '人员' ?
+						this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,'+value.infos[0].XP : this.params == '人员' ?
 							'../../static/people.png' : '../../static/car.png'
 						this.time = SFZ.substring(6, 10) + "-" + SFZ.substring(10, 12) + "-" + SFZ.substring(12, 14)
 						this.address = value.infos[0].ZZXZ ? value.infos[0].ZZXZ : ''

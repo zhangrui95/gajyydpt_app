@@ -45,7 +45,19 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 						break;
 					case '/save':
 						requestUrl = resourceList.find((item) => item.resourceId ==
-							'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9').resourceAddress
+							'230000000000-3-0600-2d85c929e85d4d21bd7c43f5ea0bf135').resourceAddress
+						break;
+					case '/jq/getJqTztgDetail':
+						requestUrl = resourceList.find((item) => item.resourceId ==
+							'230000000000-3-0100-1099d6f4305f4c0da0986f67b7d8767d').resourceAddress
+						break;
+					case '/notice/getNewPoliceNoticeList':
+						requestUrl = resourceList.find((item) => item.resourceId ==
+							'230000000000-3-0100-56d51bb0e53749b983791e19b10534f8').resourceAddress
+						break;
+					case '/ishasList':
+						requestUrl = resourceList.find((item) => item.resourceId ==
+							'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23').resourceAddress
 						break;
 					default:
 						break;

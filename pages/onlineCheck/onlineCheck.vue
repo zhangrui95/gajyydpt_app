@@ -1,7 +1,7 @@
 <template>
 	<view>
-		<wuc-tab @change="changeTab" :tab-list="tabList" textFlex :tabCur.sync="TabCur"
-			tab-class="text-center text-black bg-white" select-class="text-blue">
+		<wuc-tab @change="changeTab" :tab-list="tabList" textFlex :tabCur.sync="TabCur" tab-class="text-center text-black bg-white"
+		 select-class="text-blue">
 		</wuc-tab>
 		<block v-if="TabCur==0">
 			<view class="idcard_title" v-html="routerParams=='人员'?'人口基本信息':'车辆基本信息'">
@@ -17,10 +17,9 @@
 						暂无数据信息
 					</block>
 				</view>
-				<view class="content_right" v-if="haveBasicList.length>0">
+				<view class="content_right">
 					<view class="content_header_left">
-						<image class="imageTouXiang" :src="routerParams=='人员'?'../../static/people.png':'../../static/car.png'"
-							mode=""></image>
+						<image class="imageTouXiang" :src="routerParams=='人员'?imgInfo:'../../static/car.png'" mode=""></image>
 					</view>
 				</view>
 			</view>
@@ -68,6 +67,7 @@
 				haveDataList: [], //判断是否有无背景信息
 				haveBasicList: [], //判断有无基本信息
 				activeClass: 0,
+				imgInfo: '',
 				routerParams: '' //路由参数
 			}
 		},
@@ -75,6 +75,7 @@
 			let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
 			let curRoute = routes[routes.length - 1].route //获取当前页面路由
 			let curParam = routes[routes.length - 1].options; //获取路由参数
+			console.log('1111', curParam.type)
 			this.routerParams = curParam.type
 			// old params
 			// {
@@ -92,8 +93,7 @@
 			// }
 			let condition = {
 				"logicalOperate": "and",
-				"keyValueList": [
-					{
+				"keyValueList": [{
 						"key": "appCode",
 						"relationOperator": "=",
 						"value": "'hlk-wwhc'"
@@ -121,16 +121,16 @@
 					{
 						"key": "jybmbh",
 						"relationOperator": "=",
-						"value": getCredential().userCredential?getCredential().userCredential.load.userInfo.jh:''
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
 					}, {
 						"key": "jycode",
 						"relationOperator": "=",
-						"value": getCredential().userCredential?getCredential().userCredential.load.userInfo.jh:''
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.jh : ''
 					},
 					{
 						"key": "jysfzh",
 						"relationOperator": "=",
-						"value": getCredential().userCredential?getCredential().userCredential.load.userInfo.sfzh:''
+						"value": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : ''
 					},
 					{
 						"key": "sfzh",
@@ -149,7 +149,8 @@
 				]
 
 			}
-			this.$request('/getDataInfo', searchInterface(condition,false,'230000000000-3-0100-b4e0d2be5dd147e49adc8e6ae4addac2'), "POST", "middle").then(res => {
+			this.$request('/getDataInfo', searchInterface(condition, false,
+				'230000000000-3-0100-b4e0d2be5dd147e49adc8e6ae4addac2'), "POST", "middle").then(res => {
 				if (res.data.dataList[0]) {
 					let value = JSON.parse(res.data.dataList[0].fieldValues[0].value)
 					console.log(JSON.parse(res.data.dataList[0].fieldValues[0].value))
@@ -164,18 +165,21 @@
 					}
 					for (let item of value[0].tags) {
 						if (item.haveData == true) {
+							console.log(item.data[0].XP)
+							this.imgInfo = 'data:image/jpg;base64,' + item.data[0].XP
+							delete item.data[0].XP
 							this.haveBasicList.push(item)
 							basicMiddle.push(item.data[0])
 						}
 					}
-					console.log(contentMiddle,basicMiddle)
+					console.log(contentMiddle, basicMiddle)
 					this.content = contentMiddle
 					this.basicContent = basicMiddle
 				}
 			})
 		},
 		methods: {
-			changeTab(e) { },
+			changeTab(e) {},
 			selectTag(item, index) {
 				this.activeClass = index
 				this.content = item.data

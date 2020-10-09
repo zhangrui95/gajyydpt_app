@@ -54,20 +54,20 @@ export const searchInterface = (condition = {
 	return basic
 }
 // 移动警务操作类接口改造
-export const operationInterface = (data) => {
+export const operationInterface = (data,resource_id) => {
 	let basic = {
 		parameter: {
 			transaction: 0,
 			operations: [{
 				operationType: 1,
 				operationId: getuuid(),
-				dataObjId: getCredential().appCredential ? getCredential().appCredential.load.appInfo.appId : '',
+				dataObjId: getCredential().appCredential ? resource_id : '',
 				regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.orgId : '',
 				networkCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.networkAreaCode : '3',
 				data: [{
 					"fieldValues": [{
 						"field": "data",
-						"value": data
+						"value": JSON.stringify(data)
 					}]
 				}],
 				condition: null,

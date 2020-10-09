@@ -165,13 +165,10 @@
 			console.log('App Launch');
 		},
 		onShow: function() {
-			let app = getApp()
-			console.log(app)
-			// this.time = setInterval(this.uploadData, 10000)
+			this.time = setInterval(this.uploadData, 10000)
 			// this.timeGetNotice = setInterval(this.getNotice, 120000)
 			// setInterval(() => {
-			// 	uni.$emit('isRead', '222');
-			// 	console.log(app.globalData.text)
+			// 	this.getNotice
 			// }, 10000)
 		},
 		onHide: function() {
@@ -179,9 +176,31 @@
 			console.log('App Hide');
 		},
 		methods: {
+			getNotice() {
+				let condition = {
+					"logicalOperate": "and",
+					"keyValueList": [{
+						"key": "imei",
+						"relationOperator": "=",
+						"value": plus.device.imei,
+					}]
+				}
+				this.$request('/ishasList', searchInterface(condition, false,
+					'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23'), "POST", "htdz").then(res => {
+					// 打印调用成功回调
+					if (res.code == 200) {
+						if (res.data = true) {
+							uni.$emit('isRead', '222');
+						}
+					}
+				})
+			},
 			async upload(data) {
 				let _this = this
 				let imgData = []
+				if (data.length == 0) {
+					return
+				}
 				for (let item of data) {
 					for (let value of item.data.imgData) {
 						// console.log('item', item)
@@ -200,7 +219,8 @@
 					item.data.imgData = imgData
 					let dataType = item.dataType == 15 ? '人员' : '车辆'
 					console.log(operationInterface(getPatrolInquiriesJson(item, dataType)))
-					this.$request('/save', operationInterface(getPatrolInquiriesJson(item, dataType)), "POST", "htdz").then(res => {
+					this.$request('/save', operationInterface(getPatrolInquiriesJson(item, dataType),
+						'230000000000-3-0600-2d85c929e85d4d21bd7c43f5ea0bf135'), "POST", "htdz").then(res => {
 						console.log(res)
 						if (res.code == 200) {
 							// 将本条数据更新

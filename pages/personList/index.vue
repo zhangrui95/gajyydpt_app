@@ -12,8 +12,7 @@
 			<view class="">今日盘查数:{{checkToday}}</view>
 			<view class="">今日异常数:{{checkExceptionToady}}</view>
 		</view>
-		<uni-notice-bar showIcon="true" scrollable="true"
-		text="您有新的通知,请及时处理">
+		<uni-notice-bar showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
 		</uni-notice-bar>
 		<uni-list :border="true">
 			<!-- 右侧带角标 -->
@@ -274,7 +273,8 @@
 				console.log(_this.imgData)
 				data.data.imgData = _this.imgData
 				console.log(getPatrolInquiriesJson(data, this.params))
-				this.$request('/save', operationInterface(getPatrolInquiriesJson(data, this.params)), "POST", "htdz").then(res => {
+				this.$request('/save', operationInterface(getPatrolInquiriesJson(data, this.params),
+					'230000000000-3-0600-2d85c929e85d4d21bd7c43f5ea0bf135'), "POST", "htdz").then(res => {
 					console.log(res)
 					if (res.code == 200) {
 						// 将本条数据更新
