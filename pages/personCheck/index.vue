@@ -2,7 +2,7 @@
 	<view class="person_container">
 		<view>
 			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft"
-				background-color="#45AFDF" left-icon="back" right-icon="camera" :title="params=='人员'?'人员盘查':'车辆盘查'">
+				background-color="#45AFDF" left-icon="back" right-icon="camera" :title="params=='人员'?'人员核查':'车辆核查'">
 			</uni-nav-bar>
 		</view>
 		<block v-if="isNotic=='222'">
@@ -98,7 +98,7 @@
 					<image class="image" src="../../static/add.png" mode=""></image>
 				</view>
 				<view @longtap="deletePerson(index)" class="addPerson" v-for="(item,index) in personData" :key="index">
-					<image class="image" src="../../static/people.png" mode="">
+					<image class="image" :src="item.idCardImg" mode="">
 					</image>
 					<view>
 						<view class="person_name">
@@ -221,6 +221,14 @@
 					}
 
 				})
+				uni.$on("IdentificationType", res => {
+					if (res) {
+						this.IdentificationType = ''
+						// 清除监听
+						uni.$off('IdentificationType');
+					}
+				
+				})
 				let reg =
 					/^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/
 				if (reg.test(this.idCard)) {
@@ -279,7 +287,7 @@
 			this.params = option.type
 			this.source = option.source
 			uni.setNavigationBarTitle({
-				title: `${option.type}盘查`
+				title: `${option.type}核查`
 			})
 			if (option.type == '人员') {
 
@@ -338,7 +346,7 @@
 					uni.navigateTo({
 						url: `/pages/noticList/index`
 					})
-					uni.$emit('isRead', '111');
+					// uni.$emit('isRead', '111');
 				}
 			},
 			longtap(index) {
@@ -502,7 +510,7 @@
 							if (this.IdentificationType == 'intelligent') {
 								this.tags = value.tags
 								this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,' + value.infos[0].XP : this.params == '人员' ?
-								'../../static/people.png' : '../../static/car.png'
+									'../../static/people.png' : '../../static/car.png'
 								return
 							}
 							let SFZ = value.infos[0].SFZH ? value.infos[0].SFZH : ''
@@ -609,7 +617,7 @@
 				var _this = this
 				uni.chooseImage({
 					count: 6, //默认9
-					sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
+					sizeType: ['compressed'], //可以指定是原图还是压缩图，默认二者都有
 					sourceType: ['album', 'camera'], //从相册选择
 					success: function (res) {
 						for (let file of res.tempFilePaths) {

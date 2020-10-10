@@ -54,6 +54,10 @@
 				// 拼接移动警务参数
 				// messageId = getuuid();
 				// 
+				uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 				this.$request('/data/getCheckPointListForClient', searchInterface(undefined,false,'230000000000-3-0100-f84f1a0e5f1044a9bad306345ba17bf9'), "POST", "htdz").then(res => {
 					console.log(res.data.dataList[0].fieldValues[0].value)
 					if (res.code == 200) {

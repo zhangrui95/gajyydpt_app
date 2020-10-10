@@ -34,14 +34,14 @@ export const getuuid = () => {
 export const searchInterface = (condition = {
 	logicalOperate: 'and',
 	keyValueList: []
-}, isPage = false, resource_id) => {
+}, isPage = false, resource_id, type) => {
 	let basic = {
 		parameter: {
 			dataObjId: getCredential().appCredential ? resource_id : '',
 			regionalismCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.orgId : '',
 			networkCode: getCredential().appCredential ? getCredential().appCredential.load.appInfo.networkAreaCode : '3',
 			condition: condition,
-			fields: 'list',
+			fields: type == 'data' ? 'data' : 'list',
 			page: {
 				pageSize: isPage ? isPage : 1,
 				pageNo: isPage ? isPage : '1'
@@ -54,7 +54,7 @@ export const searchInterface = (condition = {
 	return basic
 }
 // 移动警务操作类接口改造
-export const operationInterface = (data,resource_id) => {
+export const operationInterface = (data, resource_id) => {
 	let basic = {
 		parameter: {
 			transaction: 0,
@@ -76,7 +76,7 @@ export const operationInterface = (data,resource_id) => {
 		messageId: getuuid(),
 		version: '1.0',
 	}
-	console.log(basic)
+	console.log('test', basic)
 	return basic
 }
 // 上传信息

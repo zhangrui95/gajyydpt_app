@@ -5,7 +5,8 @@
 		getuuid,
 		writeFile,
 		getPatrolInquiriesJson,
-		operationInterface
+		operationInterface,
+		searchInterface
 	} from './utils';
 	import {
 		pathToBase64
@@ -165,12 +166,12 @@
 			console.log('App Launch');
 		},
 		onShow: function() {
-			this.time = setInterval(this.uploadData, 10000)
-			// this.timeGetNotice = setInterval(this.getNotice, 120000)
+			this.time = setInterval(this.uploadData, 120000)
+			this.timeGetNotice = setInterval(this.getNotice, 120000)
 		},
 		onHide: function() {
 			clearInterval(this.time)
-			// clearInterval(this.timeGetNotice)
+			clearInterval(this.timeGetNotice)
 			console.log('App Hide');
 		},
 		methods: {
@@ -184,10 +185,12 @@
 					}]
 				}
 				this.$request('/ishasList', searchInterface(condition, false,
-					'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23'), "POST", "htdz").then(res => {
+					'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23','data'), "POST", "htdz").then(res => {
 					// 打印调用成功回调
+					let hasData = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.hasNotice
+					console.log(hasData)
 					if (res.code == 200) {
-						if (res.data = true) {
+						if (hasData) {
 							uni.$emit('isRead', '222');
 						} else {
 							uni.$emit('isRead', '111');
@@ -215,7 +218,6 @@
 							})
 
 					}
-					console.log(imgData)
 					item.data.imgData = imgData
 					let dataType = item.dataType == 15 ? '人员' : '车辆'
 					console.log(operationInterface(getPatrolInquiriesJson(item, dataType)))

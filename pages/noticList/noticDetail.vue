@@ -42,24 +42,7 @@
 	export default {
 		data() {
 			return {
-				detailInfo: {
-					"notice_id": "5fd4fcc10ac74e3bbd6031f828c77f2b",
-					"xh": null,
-					"bt": "123",
-					"fbdwmc": "黑龙江省",
-					"fbrbm": "33322201",
-					"fbrxm": "张馨蕊",
-					"fbsj": "2020-09-28 10:02:18",
-					"fsdwbm": "230000000000",
-					"fsdwdj": "1",
-					"fsjc": null,
-					"fslx": "1",
-					"fsyhbm": null,
-					"isread": "28",
-					"nr": "123",
-					"fbdwbm": "230000000000",
-					"visibale": 1
-				}
+				detailInfo: {}
 			}
 		},
 		onShow() {
@@ -80,9 +63,15 @@
 					}
 				]
 			}
+			uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 			this.$request('/jq/getJqTztgDetail', searchInterface(condition, false,
-				'230000000000-3-0100-1099d6f4305f4c0da0986f67b7d8767d'), "POST", "htdz").then(res => {
+				'230000000000-3-0100-1099d6f4305f4c0da0986f67b7d8767d','data'), "POST", "htdz").then(res => {
 				// 打印调用成功回调
+				uni.$emit('isRead', '111');
+				this.detailInfo = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.data
 			})
 			// uni.request({
 			// 	method: 'post',

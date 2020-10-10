@@ -23,39 +23,7 @@
 		data() {
 			return {
 				status: 0,
-				dataList: [{
-					"fbrxm": "张馨蕊",
-					"nr": "123",
-					"fbdwmc": "黑龙江省",
-					"fslx": "1",
-					"fbrbm": "33322201",
-					"visibale": 1,
-					"notice_id": "5fd4fcc10ac74e3bbd6031f828c77f2b",
-					"bt": "123",
-					"fsdwdj": "1",
-					"isread": "1",
-					"fbdwbm": "230000000000",
-					"fsdwbm": "230000000000",
-					"fbsj": "2020-09-28 10:02:18",
-					"xhl": 1
-				},
-				{
-					"fbrxm": "张馨蕊",
-					"nr": "123",
-					"fbdwmc": "黑龙江省",
-					"fslx": "1",
-					"fbrbm": "33322201",
-					"visibale": 1,
-					"notice_id": "5fd4fcc10ac74e3bbd6031f828c77f2b",
-					"bt": "123",
-					"fsdwdj": "1",
-					"isread": "0",
-					"fbdwbm": "230000000000",
-					"fsdwbm": "230000000000",
-					"fbsj": "2020-09-28 10:02:18",
-					"xhl": 1
-				}
-				]
+				dataList: []
 			}
 		},
 		onShow() {
@@ -69,7 +37,7 @@
 				{
 					"key": "imei",
 					"relationOperator": "=",
-					"value": "864131031213992"
+					"value": plus.device.imei
 				},
 				{
 					"key": "mjjh",
@@ -78,8 +46,15 @@
 				}
 				]
 			}
+			uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 			this.$request('/notice/getNewPoliceNoticeList', searchInterface(condition, false,
-				'230000000000-3-0100-56d51bb0e53749b983791e19b10534f8'), "POST", "htdz").then(res => {
+				'230000000000-3-0100-56d51bb0e53749b983791e19b10534f8','data'), "POST", "htdz").then(res => {
+					console.log(res)
+					this.dataList = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.list
+					console.log(this.dataList)
 					// 打印调用成功回调
 				})
 			// uni.request({

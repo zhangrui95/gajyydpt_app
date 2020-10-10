@@ -195,7 +195,7 @@
 					uni.navigateTo({
 						url: `/pages/noticList/index`
 					})
-					uni.$emit('isRead', '111');
+					// uni.$emit('isRead', '111');
 				}
 			},
 			selectList(type) {
@@ -290,6 +290,10 @@
 				console.log(_this.imgData)
 				data.data.imgData = _this.imgData
 				console.log(getPatrolInquiriesJson(data, this.params))
+				uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 				this.$request('/save', operationInterface(getPatrolInquiriesJson(data, this.params),
 					'230000000000-3-0600-2d85c929e85d4d21bd7c43f5ea0bf135'), "POST", "htdz").then(res => {
 						console.log(res)

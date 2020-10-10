@@ -149,6 +149,10 @@
 				]
 
 			}
+			uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 			this.$request('/getDataInfo', searchInterface(condition, false,
 				'230000000000-3-0100-b4e0d2be5dd147e49adc8e6ae4addac2'), "POST", "middle").then(res => {
 				if (res.data.dataList[0]) {

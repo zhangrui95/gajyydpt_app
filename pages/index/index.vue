@@ -198,7 +198,8 @@
 				`,
 					true)
 				// db.closeDB('data')
-				uni.clearStorage()
+				uni.removeStorageSync('buckle');
+				uni.removeStorageSync('buckleId')
 				this.blckle = ''
 				uni.hideLoading()
 			},
@@ -294,9 +295,9 @@
 				uni.navigateTo({
 					url: `/pages/noticList/index`
 				})
-				if (params == 'notic') {
-					uni.$emit('isRead', '111');
-				}
+				// if (params == 'notic') {
+				// 	uni.$emit('isRead', '111');
+				// }
 			},
 			handleClick() {
 				this.$refs.drawer.open();
