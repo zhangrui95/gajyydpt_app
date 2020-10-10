@@ -13,6 +13,11 @@
 	} from 'image-tools'
 	export default {
 		onLaunch: function() {
+			plus.device.getInfo({
+				success: (e) => {
+					uni.setStorageSync('imei', e.imei)
+				}
+			})
 			db.openDB('data')
 			db.executeSQL(
 				oneLine `
@@ -166,6 +171,7 @@
 			console.log('App Launch');
 		},
 		onShow: function() {
+			// this.getNotice()
 			this.time = setInterval(this.uploadData, 120000)
 			this.timeGetNotice = setInterval(this.getNotice, 120000)
 		},
@@ -181,11 +187,12 @@
 					"keyValueList": [{
 						"key": "imei",
 						"relationOperator": "=",
-						"value": plus.device.imei,
+						"value": uni.getStorageSync('imei'),
 					}]
 				}
+				console.log('uuid', plus.device.uuid)
 				this.$request('/ishasList', searchInterface(condition, false,
-					'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23','data'), "POST", "htdz").then(res => {
+					'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23', 'data'), "POST", "htdz").then(res => {
 					// 打印调用成功回调
 					let hasData = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.hasNotice
 					console.log(hasData)

@@ -59,7 +59,7 @@
 					{
 						"key": "imei",
 						"relationOperator": "=",
-						"value": plus.device.imei
+						"value": uni.getStorageSync('imei')
 					}
 				]
 			}

@@ -136,7 +136,7 @@ export const getPatrolInquiriesJson = (data, target) => {
 			"policeArea": getCredential().userCredential ? getCredential().userCredential.load.userInfo.orgId : '',
 			"locationId": locationId, //卡口编号
 			"locationName": locationName, //卡口名称
-			"imei": plus.device.imei,
+			"imei": uni.getStorageSync('imei'),
 			"cid": "cid"
 		},
 		"idcardInfo": target == '人员' ? {
