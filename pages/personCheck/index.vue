@@ -1,16 +1,19 @@
 <template>
 	<view class="person_container">
 		<view>
-			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft"
-				background-color="#45AFDF" left-icon="back" right-icon="camera" :title="params=='人员'?'人员核查':'车辆核查'">
+			<uni-nav-bar status-bar="true" color="#fff" @clickRight="submit" @clickLeft="clickLeft" background-color="#45AFDF"
+				left-icon="back" right-text="完成" :title="params=='人员'?'人员核查':'车辆核查'">
 			</uni-nav-bar>
 		</view>
 		<block v-if="isNotic=='222'">
 			<uni-notice-bar @click.native="routerNotic('notic')" showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
 			</uni-notice-bar>
 		</block>
-		<view class="idcard_title" v-html="params=='人员'?'二代身份证采集':'车辆采集'">
+		<view class="" style="display: flex;justify-content: space-between;">
+			<view class="idcard_title" v-html="params=='人员'?'二代身份证采集':'车辆采集'">
 
+			</view>
+			<uni-icons class="icons" type="camera" size="24" @click="clickRight"></uni-icons>
 		</view>
 		<view v-if="params=='人员'" class="idcard_info">
 			<text class="title">身份证号</text>
@@ -145,11 +148,11 @@
 				<uni-tag @click="addReal(item.content)" :text="item.content" />
 			</view>
 		</view>
-		<view class="submit">
+		<!-- <view class="submit">
 			<button type="default" @click="submit" class="submitBtn">
 				完成
 			</button>
-		</view>
+		</view> -->
 		<uni-popup id="popupDialog" ref="popupDialog" type="dialog">
 			<uni-popup-dialog title="" content="此操作不会保存当前的数据,是否继续?" :before-close="true" @confirm="dialogConfirm"
 				@close="dialogClose" :reset="'否'" :submit="'是'"></uni-popup-dialog>
@@ -227,7 +230,7 @@
 						// 清除监听
 						uni.$off('IdentificationType');
 					}
-				
+
 				})
 				let reg =
 					/^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/
@@ -760,6 +763,14 @@
 </script>
 
 <style scoped lang="less">
+	.icons{
+		height: 40px;
+		line-height: 40px;
+		margin-right: 20rpx;
+	}
+	/deep/ .uni-nav-bar-right-text{
+		font-size: 36rpx;
+	}
 	.person_container {
 		height: 100vh;
 		background-color: #F8F8F8;
