@@ -2,13 +2,13 @@
 	<view style="height: calc(100vh - 44px);background-color: #F8F8F8;">
 		<view>
 			<uni-nav-bar right-text="完成" @clickRight="clickRight" status-bar="true" color="#fff" @clickLeft="clickLeft"
-			 background-color="#45AFDF" left-icon="back" title="卡扣设置"></uni-nav-bar>
+			 background-color="#45AFDF" left-icon="back" title="卡口设置"></uni-nav-bar>
 		</view>
 		<view class="buckle_title">
-			卡点信息
+			卡口信息
 		</view>
 		<view class="buckle_info">
-			<text class="title">卡点名称</text>
+			<text class="title">卡口名称</text>
 			<input v-if="networkType=='no'" class="uni-input" v-model="buckle" name="name" placeholder="请输入" />
 			<!-- <input v-else class="uni-input" v-model="buckle" name="name" placeholder="请输入" /> -->
 			<block v-if="array.length>0">
@@ -22,7 +22,7 @@
 				管辖单位:{{array[this.index].checkpoint_unit_text}}
 			</view>
 			<view class="buckle_children">
-				卡点类型:{{array[this.index].checkpoint_level_text}}
+				卡口类型:{{array[this.index].checkpoint_level_text}}
 			</view>
 		</view>
 	</view>
@@ -99,7 +99,7 @@
 				if (this.networkType == 'no') {
 					if (!this.buckle) {
 						uni.showToast({
-							title: '请输入卡点名称',
+							title: '请输入卡口名称',
 							icon: 'none'
 						})
 						return
@@ -113,7 +113,7 @@
 				} else {
 					if (this.index == -1) {
 						uni.showToast({
-							title: '请输入卡点名称',
+							title: '请输入卡口名称',
 							icon: 'none'
 						})
 						return

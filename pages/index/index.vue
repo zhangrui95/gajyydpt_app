@@ -311,7 +311,7 @@
 				// 主要为了测试
 				if (uni.getStorageSync('buckle') == '') {
 					uni.showToast({
-						title: '请先选择卡点',
+						title: '请先选择卡口',
 						icon: 'none'
 					})
 					return
