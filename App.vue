@@ -48,49 +48,65 @@
 			// 	url: `pages/index/index`
 			// })
 			writeFile('开始进行统一认证')
+			var receiver;
+			var that = this
+			var main = plus.android.runtimeMainActivity(); //获取activity    
+			receiver = plus.android.implements('io.dcloud.android.content.BroadcastReceiver', {
+				onReceive: function (context, intent) { //实现onReceiver回调函数    
+					// alert(1);   
+					// 接收到了广播
+					console.log('我接收到了广播')
+					that.unifiedCertification()
+					main.unregisterReceiver(receiver); //取消监听    
+				}
+			});
+			var IntentFilter = plus.android.importClass('android.content.IntentFilter');
+			var Intent = plus.android.importClass('android.content.Intent');
+			var filter = new IntentFilter();
+			filter.addAction("com.ydjw.ua.ACTION_LOGIN"); //监听扫码广播    
+			main.registerReceiver(receiver, filter); //注册监听
 			this.unifiedCertification()
-				// 导入uri
 
-				// conosle.log(bundle)
+			// conosle.log(bundle)
 
-				// plus.io.requestFileSystem(plus.io.PRIVATE_WWW, function(fs) {
-				// 	// 可通过fs操作PRIVATE_WWW文件系统 
-				// 	// ......
-				// }, function(e) {
-				// 	console.log("Request file system failed: " + e.message);
-				// });
-				// 请求本地文件系统对象
-				// plus.io.requestFileSystem(
-				// 	plus.io.PRIVATE_DOC, // 文件系统中的根目录
-				// 	fs => {
-				// 		// 创建或打开文件, fs.root是根目录操作对象,直接fs表示当前操作对象
-				// 		fs.root.getFile('test.json', {
-				// 			create: true // 文件不存在则创建
-				// 		}, fileEntry => {
-				// 			// 文件在手机中的路径
-				// 			console.log(fileEntry.fullPath)
-				// 			fileEntry.createWriter(writer => {
-				// 				// 写入文件成功完成的回调函数
-				// 				writer.onwrite = e => {
-				// 					// console.log("写入数据成功");
-				// 				};
-				// 				// 写入数据
-				// 				writer.write(JSON.stringify({
-				// 					"sid": "c5516ec3-5965-4803-874c-799239049cdb",
-				// 					"aqzx": "http://192.168.3.51:8100",
-				// 					"middle": "http://192.168.104.245:7100",
-				// 					"htdz": "http://192.168.104.245:7005"
-				// 				}));
-				// 			})
-				// 		}, e => {
-				// 			console.log("getFile failed: " + e.message);
-				// 		});
-				// 	},
-				// 	e => {
-				// 		console.log(e.message);
-				// 	}
-				// );
-				console.log('App Launch');
+			// plus.io.requestFileSystem(plus.io.PRIVATE_WWW, function(fs) {
+			// 	// 可通过fs操作PRIVATE_WWW文件系统 
+			// 	// ......
+			// }, function(e) {
+			// 	console.log("Request file system failed: " + e.message);
+			// });
+			// 请求本地文件系统对象
+			// plus.io.requestFileSystem(
+			// 	plus.io.PRIVATE_DOC, // 文件系统中的根目录
+			// 	fs => {
+			// 		// 创建或打开文件, fs.root是根目录操作对象,直接fs表示当前操作对象
+			// 		fs.root.getFile('test.json', {
+			// 			create: true // 文件不存在则创建
+			// 		}, fileEntry => {
+			// 			// 文件在手机中的路径
+			// 			console.log(fileEntry.fullPath)
+			// 			fileEntry.createWriter(writer => {
+			// 				// 写入文件成功完成的回调函数
+			// 				writer.onwrite = e => {
+			// 					// console.log("写入数据成功");
+			// 				};
+			// 				// 写入数据
+			// 				writer.write(JSON.stringify({
+			// 					"sid": "c5516ec3-5965-4803-874c-799239049cdb",
+			// 					"aqzx": "http://192.168.3.51:8100",
+			// 					"middle": "http://192.168.104.245:7100",
+			// 					"htdz": "http://192.168.104.245:7005"
+			// 				}));
+			// 			})
+			// 		}, e => {
+			// 			console.log("getFile failed: " + e.message);
+			// 		});
+			// 	},
+			// 	e => {
+			// 		console.log(e.message);
+			// 	}
+			// );
+			console.log('App Launch');
 		},
 		onShow: function () {
 			// this.getNotice()
@@ -129,9 +145,8 @@
 					// throw Error('获取票据失败')
 				} else {
 					var resultCode = bundle.getInt('resultCode')
-					console.log(resultCode)
+					console.log('resultCode', resultCode)
 					if (resultCode == '-5') {
-						this.unifiedCertification()
 						return;
 					}
 					var messageId = bundle.getString("messageId");
