@@ -120,7 +120,7 @@
 				personNum: 0,
 				carNum: 0,
 				blckle: '',
-				userinfo: getCredential().userCredential,
+				userinfo: uni.getStorageSync('userCredential') ? getCredential().userCredential : '',
 				updateId: '',
 				version: plus.runtime.version,
 				isNotic: ''
@@ -130,6 +130,10 @@
 			uniPopupDialog
 		},
 		onShow() {
+			console.log('xinxi', uni.getStorageSync('userCredential'))
+			if (uni.getStorageSync('userCredential')) {
+				this.userinfo = getCredential().userCredential
+			}
 			// db.openDB('data')
 			db.SelectData(this, 'person', oneLine `
 				select count(1) as count  from collectDataTable where dataType=15 and date(createdAt) =  date('now')

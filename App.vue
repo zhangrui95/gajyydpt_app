@@ -157,9 +157,9 @@
 						uni.setStorageSync('userCredential', userCredential)
 						console.log(appCredential, userCredential)
 						writeFile(`获取票据成功`, '统一认证返回信息')
-						// uni.navigateTo({
-						// 	url: `/index/index/index`
-						// })
+						uni.switchTab({
+							url: `/pages/index/index`
+						})
 						var personId = JSON.parse(userCredential).credential.load.userInfo.userId
 						console.log(personId)
 						// 登录成功服务统计对接
