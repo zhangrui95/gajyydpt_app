@@ -12,7 +12,8 @@
         "nvueCompiler" : "uni-app",
         "compilerVersion" : 3,
         "modules" : {
-            "SQLite" : {}
+            "SQLite" : {},
+            "Maps" : {}
         },
         "distribute" : {
             "android" : {
@@ -44,7 +45,8 @@
             },
             "ios" : {},
             "sdkConfigs" : {
-                "ad" : {}
+                "ad" : {},
+                "maps" : {}
             }
         }
     },

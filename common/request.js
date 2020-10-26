@@ -26,7 +26,7 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 	}) => {
 	return new Promise((resolve, reject) => {
 		uni.getNetworkType({
-			success: function(res) {
+			success: function (res) {
 				let requestUrl = ''
 				let resourceList = JSON.parse(uni.getStorageSync('resourceList'))
 				console.log(resourceList, url)
@@ -59,6 +59,10 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 						requestUrl = resourceList.find((item) => item.resourceId ==
 							'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23').resourceAddress
 						break;
+					case '/uploadGps':
+						requestUrl = resourceList.find((item) => item.resourceId ==
+							'230000000000-3-0100-dea86786075d41c796859bbabb5f4d78').resourceAddress
+						break;
 					default:
 						break;
 				}
@@ -72,7 +76,7 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 							name: 'file',
 							formData: data
 						}).then((response) => {
-							setTimeout(function() {
+							setTimeout(function () {
 								uni.hideLoading();
 							}, 200);
 							let [error, res] = response;
@@ -90,7 +94,7 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 							dataType: 'json',
 						}).then((response) => {
 							console.log(response)
-							setTimeout(function() {
+							setTimeout(function () {
 								uni.hideLoading();
 							}, 200);
 							let [error, res] = response;

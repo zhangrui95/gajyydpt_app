@@ -6,13 +6,15 @@
 		writeFile,
 		getPatrolInquiriesJson,
 		operationInterface,
-		searchInterface
+		searchInterface,
+		getFormatDate,
+		getCredential
 	} from './utils';
 	import {
 		pathToBase64
 	} from 'image-tools'
 	export default {
-		onLaunch: function () {
+		onLaunch: function() {
 			plus.device.getInfo({
 				success: (e) => {
 					uni.setStorageSync('imei', e.imei)
@@ -20,7 +22,7 @@
 			})
 			db.openDB('data')
 			db.executeSQL(
-				oneLine`
+				oneLine `
 				CREATE TABLE if not exists [policeInfoTable] (
 				  [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
 				  [policeIdcard] VARCHAR2(18), 
@@ -32,7 +34,7 @@
 			)`
 			)
 			db.executeSQL(
-				oneLine`
+				oneLine `
 					CREATE TABLE if not exists [collectDataTable] (
 					  [optargetId] varchar(255), 
 					  [policeIdcard] varchar(255), 
@@ -52,7 +54,7 @@
 			var that = this
 			var main = plus.android.runtimeMainActivity(); //获取activity    
 			receiver = plus.android.implements('io.dcloud.android.content.BroadcastReceiver', {
-				onReceive: function (context, intent) { //实现onReceiver回调函数    
+				onReceive: function(context, intent) { //实现onReceiver回调函数    
 					// alert(1);   
 					// 接收到了广播
 					console.log('我接收到了广播')
@@ -108,17 +110,68 @@
 			// );
 			console.log('App Launch');
 		},
-		onShow: function () {
+		onShow: function() {
 			// this.getNotice()
+			plus.geolocation.getCurrentPosition(function(p) {
+				console.log(p)
+				console.log('Geolocation\nLatitude:' + p.coords.latitude + '\nLongitude:' + p.coords.longitude + '\nAltitude:' + p.coords
+					.altitude);
+			}, function(e) {
+				console.log('Geolocation error: ' + e.message);
+			});
+			this.timeGps = setInterval(this.upLoadGps, 10000)
 			this.time = setInterval(this.uploadData, 120000)
 			this.timeGetNotice = setInterval(this.getNotice, 120000)
 		},
-		onHide: function () {
+		onHide: function() {
+			clearInterval(this.timeGps)
 			clearInterval(this.time)
 			clearInterval(this.timeGetNotice)
 			console.log('App Hide');
 		},
 		methods: {
+			upLoadGps() {
+				let that = this
+				uni.getLocation({
+					type: 'wgs84',
+					altitude: true,
+					success: function(res) {
+						console.log(JSON.stringify(res))
+						console.log('当前位置的经度：' + res.longitude);
+						console.log('当前位置的纬度：' + res.latitude);
+						console.log('当前位置的速度：' + res.speed);
+						console.log('当前位置的高度：' + res.altitude);
+						uni.setStorageSync('longitude', res.longitude)
+						uni.setStorageSync('latitude', res.latitude)
+						let params = {
+							"latitude": res.latitude,
+							"longitude": res.longitude,
+							"puid": uni.getStorageSync('imei'),
+							"isPosSuccess": 1,
+							"movingSpeed": res.speed,
+							"direction": 0,
+							"altitude": res.altitude,
+							"idCard": uni.getStorageSync('userCredential') ? getCredential().userCredential.load.userInfo.sfzh : '',
+							"BeijingCurDateTime": getFormatDate()
+						}
+						let condition = {
+							"logicalOperate": "and",
+							"keyValueList": [{
+								"key": "pd",
+								"relationOperator": "=",
+								"value": JSON.stringify(params)
+							}]
+						}
+						that.$request('/uploadGps', searchInterface(condition, false,
+							'230000000000-3-0100-dea86786075d41c796859bbabb5f4d78', 'data'), "POST", "htdz").then(res => {
+							console.log('上传成功', res)
+						})
+					},
+					fail: function(err) {
+						console.log('获取经纬度信息失败', err)
+					}
+				});
+			},
 			unifiedCertification() {
 				let appId = '230000000000-3-1-8ac0185c24494028bbfd1df50385c220'; // 注册应用的时候获取到的
 				var Uri = plus.android.importClass("android.net.Uri");
@@ -164,10 +217,10 @@
 						console.log(personId)
 						// 登录成功服务统计对接
 						var main = plus.android.runtimeMainActivity();
-						var Statistics = plus.android.importClass('com.hylink.wwpc.sdkStatic');
-						var statistics = new Statistics()
-						statistics.getStatistics(main, personId)
-						statistics.stopStatistics(main)
+						// var Statistics = plus.android.importClass('com.hylink.wwpc.sdkStatic');
+						// var statistics = new Statistics()
+						// statistics.getStatistics(main, personId)
+						// statistics.stopStatistics(main)
 						// 寻址
 						var Uri = plus.android.importClass("android.net.Uri");
 						let uri = Uri.parse("content://com.ydjw.rsb.getResourceAddress")
@@ -196,6 +249,7 @@
 									// 	title: '寻址成功'
 									// })
 									uni.setStorageSync('resourceList', resourceList)
+									this.upLoadGps()
 									// writeFile(`资源:${resourceList}\n返回码:${resultCode}`)
 								} else {
 									// writeFile(`资源:${resourceList}\n返回码:${resultCode}`, '寻址失败')
@@ -218,17 +272,17 @@
 				console.log('uuid', plus.device.uuid)
 				this.$request('/ishasList', searchInterface(condition, false,
 					'230000000000-3-0100-6f2a953fcdec475b997fb2e39ff4fc23', 'data'), "POST", "htdz").then(res => {
-						// 打印调用成功回调
-						let hasData = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.hasNotice
-						console.log(hasData)
-						if (res.code == 200) {
-							if (hasData) {
-								uni.$emit('isRead', '222');
-							} else {
-								uni.$emit('isRead', '111');
-							}
+					// 打印调用成功回调
+					let hasData = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.hasNotice
+					console.log(hasData)
+					if (res.code == 200) {
+						if (hasData) {
+							uni.$emit('isRead', '222');
+						} else {
+							uni.$emit('isRead', '111');
 						}
-					})
+					}
+				})
 			},
 			async upload(data) {
 				let _this = this
@@ -255,22 +309,22 @@
 					console.log(operationInterface(getPatrolInquiriesJson(item, dataType)))
 					this.$request('/save', operationInterface(getPatrolInquiriesJson(item, dataType),
 						'230000000000-3-0600-2d85c929e85d4d21bd7c43f5ea0bf135'), "POST", "htdz").then(res => {
-							console.log(res)
-							if (res.code == 200) {
-								// 将本条数据更新
-								// db.openDB('data')
-								db.updataSql(
-									`UPDATE collectDataTable SET isUpload = '1' WHERE optargetId = '${item.optargetId}'`)
-								// db.closeDB('data')
-							} else { }
-						}).catch(err => {
-							console.log(err)
-						})
+						console.log(res)
+						if (res.code == 200) {
+							// 将本条数据更新
+							// db.openDB('data')
+							db.updataSql(
+								`UPDATE collectDataTable SET isUpload = '1' WHERE optargetId = '${item.optargetId}'`)
+							// db.closeDB('data')
+						} else {}
+					}).catch(err => {
+						console.log(err)
+					})
 				}
 
 			},
 			uploadData() {
-				db.SelectData(this, 'person', oneLine`
+				db.SelectData(this, 'person', oneLine `
 				SELECT
 					data,
 					createdAt,

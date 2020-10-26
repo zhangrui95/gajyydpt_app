@@ -124,8 +124,8 @@ export const getPatrolInquiriesJson = (data, target) => {
 		"dataType": target == '人员' ? 15 : 16,
 		"checkException": data.checkException, //true 异常， false 正常
 		"locationInfo": {
-			"latitude": 0.0,
-			"longitude": 0.0,
+			"latitude": uni.getStorageSync('latitude') ? uni.getStorageSync('latitude') : 0.0,
+			"longitude": uni.getStorageSync('longitude') ? uni.getStorageSync('longitude') : 0.0,
 			"checkTime": new Date(data.createdAt).getTime(),
 			"policeName": getCredential().userCredential ? getCredential().userCredential.load.userInfo.xm : '',
 			"policeIdcard": getCredential().userCredential ? getCredential().userCredential.load.userInfo.sfzh : '',
@@ -210,4 +210,18 @@ export const writeFile = (text, type = '信息') => {
 			console.log(e.message);
 		}
 	);
+}
+// 日期格式化
+export const getFormatDate = () => {
+	var date = new Date()
+	var year = date.getFullYear()
+	var month = date.getMonth() + 1
+	var day = date.getDate()
+	var hour = date.getHours() < 10 ? "0" + date.getHours() : date.getHours()
+	var minute = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()
+	var second = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+	month >= 1 && month <= 9 ? (month = "0" + month) : "";
+	day >= 0 && day <= 9 ? (day = "0" + day) : "";
+	var timer = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+	return timer;
 }
