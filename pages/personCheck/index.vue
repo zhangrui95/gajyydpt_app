@@ -84,7 +84,8 @@
 				</view>
 			</view>
 			<view class="content_footer" v-if="params=='人员'">
-				<button class="btn" style="flex: 1;" type="default" @click="routerCheck">在线核查</button>
+				<button class="btn" style="flex: 1;margin:0 5px;" type="default" @click="routerCheck">在线核查</button>
+				<button class="btn" style="flex: 1;margin:0 5px;" type="default" @click="photoTest">人像比对</button>
 				<!-- <button class="btn" type="default">人像比对</button> -->
 			</view>
 			<view class="content_footer" v-if="params=='车辆'">
@@ -204,11 +205,13 @@
 				Runarguments: '',
 				IdentificationType: '',
 				isNotic: '',
-				imgBack: '0'
+				imgBack: '0',
+				faceTest:'',
 			}
 		},
 		onShow() {
-			console.log('imgBack', this.imgBack)
+			console.log('imgBack', this.imgBack);
+			console.log('faceTest', this.faceTest);
 			let routes = getCurrentPages(); // 获取当前打开过的页面路由数组
 			var curRoute = routes[routes.length - 1].route //获取当前页面路由
 			let curParam = routes[routes.length - 1].options; //获取路由参数
@@ -626,6 +629,7 @@
 					sourceType: ['album', 'camera'], //从相册选择
 					success: function(res) {
 						for (let file of res.tempFilePaths) {
+							console.log('file=====>',file);
 							_this.imgData.push({
 								img: file
 							})
@@ -745,6 +749,12 @@
 			// deletePhoto(index) {
 			// 	this.$refs.popupDelete.open()
 			// },
+			photoTest(){
+				console.log('比对')
+				uni.navigateTo({
+					url: '/pages/faceTest/faceTest?idCardImg='+this.idCardImg,
+				});
+			},
 			routerCheck() {
 				// if(this.idCard=='){}
 				let reg = this.params == '人员' ?

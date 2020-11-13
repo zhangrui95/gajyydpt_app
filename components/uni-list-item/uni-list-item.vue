@@ -331,6 +331,7 @@ $list-item-pd: $uni-spacing-col-lg $uni-spacing-row-lg;
 	flex-direction: row;
 	justify-content: flex-end;
 	align-items: center;
+	max-width: 82px;
 }
 
 .uni-list-item__header {
@@ -361,7 +362,7 @@ $list-item-pd: $uni-spacing-col-lg $uni-spacing-row-lg;
 	display: flex;
 	/* #endif */
 	align-items: center;
-	padding: 0 10px;
+	padding: 14px 10px;
 }
 
 .flex--direction {
@@ -390,7 +391,7 @@ $list-item-pd: $uni-spacing-col-lg $uni-spacing-row-lg;
 
 .uni-list-item__extra-text {
 	color: $uni-text-color-grey;
-	font-size: $uni-font-size-sm;
+	font-size: 9px;
 }
 .uni-ellipsis-1 {
 	/* #ifndef APP-NVUE */

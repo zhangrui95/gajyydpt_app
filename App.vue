@@ -45,29 +45,29 @@
 					  [createdAt] datetime, checkException bool, IsSDFinish VARCHAR2 default 0);
 				)`
 			)
-			// db.closeDB('data')
+			db.closeDB('data')
 			// uni.navigateTo({
 			// 	url: `pages/index/index`
 			// })
-			writeFile('开始进行统一认证')
-			var receiver;
-			var that = this
-			var main = plus.android.runtimeMainActivity(); //获取activity    
-			receiver = plus.android.implements('io.dcloud.android.content.BroadcastReceiver', {
-				onReceive: function(context, intent) { //实现onReceiver回调函数    
-					// alert(1);   
-					// 接收到了广播
-					console.log('我接收到了广播')
-					that.unifiedCertification()
-					main.unregisterReceiver(receiver); //取消监听    
-				}
-			});
-			var IntentFilter = plus.android.importClass('android.content.IntentFilter');
-			var Intent = plus.android.importClass('android.content.Intent');
-			var filter = new IntentFilter();
-			filter.addAction("com.ydjw.ua.ACTION_LOGIN"); //监听扫码广播    
-			main.registerReceiver(receiver, filter); //注册监听
-			this.unifiedCertification()
+			// writeFile('开始进行统一认证')
+			// var receiver;
+			// var that = this
+			// var main = plus.android.runtimeMainActivity(); //获取activity    
+			// receiver = plus.android.implements('io.dcloud.android.content.BroadcastReceiver', {
+			// 	onReceive: function(context, intent) { //实现onReceiver回调函数    
+			// 		// alert(1);   
+			// 		// 接收到了广播
+			// 		console.log('我接收到了广播')
+			// 		that.unifiedCertification()
+			// 		main.unregisterReceiver(receiver); //取消监听    
+			// 	}
+			// });
+			// var IntentFilter = plus.android.importClass('android.content.IntentFilter');
+			// var Intent = plus.android.importClass('android.content.Intent');
+			// var filter = new IntentFilter();
+			// filter.addAction("com.ydjw.ua.ACTION_LOGIN"); //监听扫码广播    
+			// main.registerReceiver(receiver, filter); //注册监听
+			// this.unifiedCertification()
 
 			// conosle.log(bundle)
 
@@ -112,16 +112,16 @@
 		},
 		onShow: function() {
 			// this.getNotice()
-			plus.geolocation.getCurrentPosition(function(p) {
-				console.log(p)
-				console.log('Geolocation\nLatitude:' + p.coords.latitude + '\nLongitude:' + p.coords.longitude + '\nAltitude:' + p.coords
-					.altitude);
-			}, function(e) {
-				console.log('Geolocation error: ' + e.message);
-			});
-			this.timeGps = setInterval(this.upLoadGps, 10000)
-			this.time = setInterval(this.uploadData, 120000)
-			this.timeGetNotice = setInterval(this.getNotice, 120000)
+			// plus.geolocation.getCurrentPosition(function(p) {
+			// 	console.log(p)
+			// 	console.log('Geolocation\nLatitude:' + p.coords.latitude + '\nLongitude:' + p.coords.longitude + '\nAltitude:' + p.coords
+			// 		.altitude);
+			// }, function(e) {
+			// 	console.log('Geolocation error: ' + e.message);
+			// });
+			// this.timeGps = setInterval(this.upLoadGps, 10000)
+			// this.time = setInterval(this.uploadData, 120000)
+			// this.timeGetNotice = setInterval(this.getNotice, 120000)
 		},
 		onHide: function() {
 			clearInterval(this.timeGps)
@@ -136,7 +136,6 @@
 					type: 'wgs84',
 					altitude: true,
 					success: function(res) {
-						console.log(JSON.stringify(res))
 						console.log('当前位置的经度：' + res.longitude);
 						console.log('当前位置的纬度：' + res.latitude);
 						console.log('当前位置的速度：' + res.speed);
@@ -351,6 +350,7 @@
 		font-family: uniicons;
 		src: url('/static/uni.ttf');
 	}
+	@import url("./common/iconfont.css");
 
 	/* #endif */
 </style>

@@ -52,7 +52,7 @@
 				</view>
 			</view>
 			<view class="point_block">
-				<image src="../../static/weizhi.png" mode="widthFix"></image>
+				<image src="../../static/weizhi.png" mode="widthFix" @click="goMap"></image>
 				{{blckle}}
 			</view>
 		</view>
@@ -163,7 +163,7 @@
 					_this.blckle = res.data
 				}
 			});
-			this.blckle = option.type
+			// this.blckle = option && option.type ? option.type : '';
 		},
 		methods: {
 			dialogClose(done) {
@@ -175,6 +175,11 @@
 				// 	url: '/pages/login/index'
 				// })
 				done()
+			},
+			goMap(){
+				uni.navigateTo({
+					url: '/pages/map/map'
+				})
 			},
 			dialogUpload(done) {
 				this.$request('/Update/api/upgrade/downloadApk.do', {

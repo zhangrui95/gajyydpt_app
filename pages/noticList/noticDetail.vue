@@ -42,7 +42,9 @@
 	export default {
 		data() {
 			return {
-				detailInfo: {}
+				detailInfo: {
+					bt:'消息标题',fbrxm:'张三',fbdwmc:'哈尔滨道外区公安分局',fbsj:'2020-11-10'
+				}
 			}
 		},
 		onShow() {

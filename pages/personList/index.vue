@@ -3,7 +3,7 @@
 		<!-- 上方展示 -->
 		<view>
 			<uni-nav-bar status-bar="true" color="#fff" @clickRight="clickRight" @clickLeft="clickLeft"
-				background-color="#45AFDF" left-icon="back" right-text="筛选" :title="params=='人员'?'人员盘查历史':'车辆盘查历史'">
+				background-color="#45AFDF" left-icon="back" right-text="筛选" :title="params=='人员'?'人员核查历史':'车辆核查历史'">
 			</uni-nav-bar>
 		</view>
 		<view class="view_header">

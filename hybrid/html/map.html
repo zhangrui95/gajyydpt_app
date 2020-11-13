@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
+    <title>维稳核查</title>
+    <link rel="stylesheet" href="./minemap.css">
+    <script src="./minemap.js"></script>
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+</body>
+<script>
+    minemap.domainUrl = "http://minedata.cn";
+    minemap.dataDomainUrl = "http://datahive.minedata.cn";
+    minemap.spriteUrl = "http://minedata.cn/minemapapi/v2.1.0/sprite/sprite";
+    minemap.serviceUrl = "http://mineservice.minedata.cn/service/";
+    
+    minemap.appKey = "634c6094eff844f39a54b2a87c133e34";
+    minemap.solution = 13999;
+    var map = new minemap.Map({
+        container: 'map',
+        style: "http://mineservice.minedata.cn/service/solu/style/id/13999",
+        center: [126.64450854063031, 45.778747557938516],
+        zoom: 15,
+        pitch: 0,
+        maxZoom:17,
+        minZoom:3
+    });
+	map.on('load', function () {
+			map.loadImage('./jl.png', function (error, image) {
+				if (error) throw error;
+				map.addImage('personGps', image);
+			});
+			map.loadImage('./myGps.png', function (error, image) {
+				if (error) throw error;
+				map.addImage('myGps', image);
+			});
+	        // 增加自定义数据源、自定义图层
+	        addSources();
+	        addLayers();
+			addMySources();
+			addMyLayers();
+	    });
+ function addSources() {
+		var center = map.getCenter();
+		var jsonData = {
+			"type": "FeatureCollection",
+			"features": [
+				{
+					"type": "Feature",
+					"geometry": {
+						"type": "Point",
+						"coordinates": [center.lng + 0.001, center.lat + 0.002]
+					},
+					"properties": {
+						"title": "张三",
+						"kind": "1"
+					},
+				}, {
+					"type": "Feature",
+					"geometry": {
+						"type": "Point",
+						"coordinates": [center.lng + 0.001, center.lat - 0.002]
+					},
+					"properties": {
+						"title": "李四",
+						"kind": "1"
+					},
+				}, {
+					"type": "Feature",
+					"geometry": {
+						"type": "Point",
+						"coordinates": [center.lng - 0.004, center.lat - 0.002]
+					},
+					"properties": {
+						"title": "王二",
+						"kind": "1"
+					}
+				}
+			]
+		};
+		map.addSource("pointSource", {
+			"type": "geojson",
+			"data": jsonData
+		});
+	}
+
+	function addLayers() {
+		map.addLayer({
+			"id": "symbolLayer",
+			"type": "symbol",
+			"source": "pointSource",
+			"layout": {
+				"visibility": "visible",
+				"icon-image": "personGps",
+				"text-field": "{title}",
+				"text-offset": [0, 1.5], 
+				"text-anchor": "top",
+				"text-size": 12,
+				"icon-size": 0.4, 
+				"icon-allow-overlap": true,  //图标允许压盖
+				"text-allow-overlap": true,   //图标覆盖文字允许压盖
+			},
+			"paint": {
+				"text-color": '#000',
+			},
+			"minzoom": 7,
+			"maxzoom": 17.5
+		});
+	}
+	function addMySources() {
+			var center = map.getCenter();
+			var jsonData = {
+				"type": "FeatureCollection",
+				"features": [
+					{
+						"type": "Feature",
+						"geometry": {
+							"type": "Point",
+							"coordinates": [center.lng, center.lat]
+						},
+						"properties": {
+							"kind": "0"
+						},
+					},
+				]
+			};
+			map.addSource("myGpsSource", {
+				"type": "geojson",
+				"data": jsonData
+			});
+		}
+	
+		function addMyLayers() {
+			map.addLayer({
+				"id": "myGps",
+				"type": "symbol",
+				"source": "myGpsSource",
+				"layout": {
+					"visibility": "visible",
+					"icon-image": "myGps",
+					"text-field": "{title}",
+					"text-offset": [0, 2],
+					"text-anchor": "top",
+					"text-size": 12,
+					"icon-size": 0.3, 
+					"icon-allow-overlap": true,  //图标允许压盖
+					"text-allow-overlap": true,   //图标覆盖文字允许压盖
+				},
+				"paint": {
+					"text-color": '#000',
+				},
+				"minzoom": 7,
+				"maxzoom": 17.5
+			});
+		}
+</script>
+</html>

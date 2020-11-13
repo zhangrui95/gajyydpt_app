@@ -23,7 +23,9 @@
 		data() {
 			return {
 				status: 0,
-				dataList: []
+				dataList: [
+					{bt:'消息标题',fbrxm:'张三',fbdwmc:'哈尔滨道外区公安分局',fbsj:'2020-11-10'}
+				]
 			}
 		},
 		onShow() {
@@ -46,15 +48,15 @@
 				}
 				]
 			}
-			uni.showLoading({
-							title: '正在加载...',
-							mask: true
-						})
+			// uni.showLoading({
+			// 				title: '正在加载...',
+			// 				mask: true
+			// 			})
 			this.$request('/notice/getNewPoliceNoticeList', searchInterface(condition, false,
 				'230000000000-3-0100-56d51bb0e53749b983791e19b10534f8','data'), "POST", "htdz").then(res => {
-					console.log(res)
-					this.dataList = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.list
-					console.log(this.dataList)
+					console.log(res) 
+					// this.dataList = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.list
+					// console.log(this.dataList)
 					// 打印调用成功回调
 				})
 			// uni.request({

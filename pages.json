@@ -7,6 +7,23 @@
 	// 	}
 	// },
 	{
+	    "path" : "pages/map/map",
+	    "style" :                                                                                    
+	    {
+	        "navigationBarTitleText": "维稳核查",
+	        "app-plus": {
+	                    		 "titleNView": {
+	        						 "autoBackButton":false ,
+	                    			 "buttons": [
+	        							 {"fontSrc": "/static/iconfont.ttf","text":"\ue62c","fontSize":"26px","float":"left"},
+	        							 {"fontSrc": "/static/iconfont.ttf","text":"\ue60d","fontSize":"26px","float":"right"}
+	        							 ]
+	                    		 }
+	        }
+	    }
+	    
+	},
+	{
 		"path": "pages/index/index",
 		"style": {
 			"app-plus": {
@@ -48,6 +65,14 @@
 				"navigationBarTitleText": "通知详情"
 				// "backgroundColor":"#F8F8F8"
 			}
+        }
+        ,{
+            "path" : "pages/faceTest/faceTest",
+            "style" :                                                                                    
+            {
+				"navigationBarTitleText": "人像比对"
+            }
+            
         }
     ],
 	"globalStyle": {
