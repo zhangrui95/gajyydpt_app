@@ -141,7 +141,7 @@
 			<input class="uni-input" v-model="real" name="name" placeholder="请输入" />
 		</view>
 		<view class="idcard_title">
-			快速输入
+			<text>快速输入</text>
 		</view>
 		<view class="example-body">
 			<view class="tag-view" v-for="item in dictArr" :key="item.content">

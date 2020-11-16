@@ -1,12 +1,14 @@
 <template>
 	<view :style="{width:'100%', height:height+ 'px'}" ref="map" id="map">
-		<web-view src="/hybrid/html/map.html" :style="{width:'100%', height:height+ 'px'}"></web-view>
+		<web-view src="/hybrid/html/map.html?jd=126.64450854063031&wd=45.778747557938516" :style="{width:'100%', height:height+ 'px'}" @onPostMessage="message"></web-view>
 		<image class="wdcj" src="/static/wdcj.png" @click="getshowCj"></image>
 		<image class="sj" src="/static/sj.png" v-if="showCj"></image>
 		<view class="cjList" v-if="showCj">
 			<text class="cjItem itemBorder" @click="getJqList(0)">待签收(10)</text>
-			<text class="cjItem itemBorder" @click="getJqList(1)" style="color: #feaf57;">待到场(10)</text>
-			<text class="cjItem" @click="getJqList(2)" style="color: #05a2f6;">待反馈(10)</text>
+			<text class="cjItem itemBorder" @click="getJqList(1)" style="color: #05a2f6;">已签收(10)</text>
+			<text class="cjItem itemBorder" @click="getJqList(2)" style="color: #feaf57;">已到达(10)</text>
+			<text class="cjItem itemBorder" @click="getJqList(3)" style="color: #1afa29;">已完结(10)</text>
+			<text class="cjItem" @click="getJqList(4)" style="color: #AAAAAA;">已反馈(10)</text>
 		</view>
 		<view class="jqList" v-if="showCj && showJq">
 			<uni-list>
@@ -110,7 +112,7 @@
 				userinfo: uni.getStorageSync('userCredential') ? getCredential().userCredential : '',
 				updateId: '',
 				version: plus.runtime.version,
-				isNotic: ''
+				isNotic: '',
 			}
 		},
 		components: {
@@ -160,6 +162,15 @@
 			this.blckle = option.type
 		},
 		methods: {
+			message(evt) {
+			    console.log('接收到的消息：' + JSON.stringify(evt.detail.data[0].action));  
+				let type = JSON.stringify(evt.detail.data[0].action);
+				let coord = JSON.stringify(evt.detail.data[0].coord);
+				let features = JSON.stringify(evt.detail.data[0].features);
+				uni.navigateTo({
+					url: `/pages/mapDetail/mapDetail?type=${type}&coord=${coord}&features=${features}`
+				})
+			},
 			getshowCj(){
 				this.showCj = !this.showCj;
 				if(!this.showCj){

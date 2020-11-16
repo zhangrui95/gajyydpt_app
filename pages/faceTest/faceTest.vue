@@ -32,7 +32,8 @@
 <script>
 	import {
 		pathToBase64
-	} from 'image-tools'
+	} from 'image-tools';
+	var FaceInit = plus.android.importClass('com.hylink.wwpc.faceutil.FaceContrastUtil');
 	export default {
 		data() {
 			return {
@@ -86,10 +87,9 @@
 							let array = new Uint8Array(arrayBuffer);
 							console.log('arrayBuffer',array);
 							var main = plus.android.runtimeMainActivity();
-							var FaceInit = plus.android.importClass('com.hylink.wwpc.ZTEFace');
 							var face = new FaceInit();
 							uni.hideLoading();
-							face.getFaceInfo(array,base64);
+							face.base64Contrast(base64,base64);
 							_this.bdReturn = 'success';
 						})
 						.catch(error => {

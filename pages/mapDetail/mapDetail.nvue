@@ -1,0 +1,167 @@
+<template>
+	<view>
+		<web-view :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd" :style="{width:'100%', height:'150px'}" @onPostMessage="message"></web-view>
+		<view class="detailBox">
+			<view class="titleBox">
+				<text class="title">20201015苏某抢劫案某抢劫案某抢劫案</text>
+				<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')"></image>
+				<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"></image>
+			</view> 
+			<uni-list>
+			    <uni-list-item title="警情编号：A2555145369522"></uni-list-item> 
+				<uni-list-item title="报案时间：2020/11/10 18:34:55"></uni-list-item>
+				<uni-list-item title="警情地点：中源大道1122号"></uni-list-item>
+				<uni-list-item title="报警电话：1566332111"></uni-list-item>
+				<uni-list-item title="警情类别：110报警"></uni-list-item>
+			</uni-list>
+			<view class="fkTitle"><text class="fknr">反馈内容</text><text class="bt"> (必填)</text></view>
+			<view>
+				  <textarea class="textarea" placeholder='请输入反馈内容' placeholder-style="color:#ccc" @input="getTextarea"/>
+			</view>
+			<view class="idcard_title">
+				<text class="kssr">快速输入</text>
+			</view>
+			<view class="tagBox">
+				<text class="tag">无效报警</text>
+				<text class="tag">已转交其他部门</text>
+				<text class="tag">纠纷一协调完成</text>
+			</view>
+		</view>
+		<view class="btnBox">
+			<button class="btnLeft"><text class="btnText">签收</text></button>
+			<button class="btnRight"><text class="btnText">取消</text></button>
+		</view>
+	</view>
+</template>
+
+<script>
+	import uniList from "@/components/uni-list/uni-list.vue"
+	import uniListItem from "@/components/uni-list-item/uni-list-item.vue"
+	export default {
+		data() {
+			return {
+				jd:'',
+				wd:''
+			}
+		},
+		onLoad:function(option){
+			console.log('option',option);
+			this.jd = JSON.parse(option.coord)[0];
+			this.wd = JSON.parse(option.coord)[1] + 0.0006;
+		},
+		methods: {
+			message(evt) {
+			    console.log('接收到的消息：' + JSON.stringify(evt.detail.data[0].action));  
+			},
+			routerAdd(type) {
+				uni.navigateTo({
+					url: `/pages/personCheck/index?type=${type}`
+				});
+			}
+		}
+	}
+</script>
+
+<style>
+	.detailBox{
+		margin-bottom: 70px;
+	}
+	.titleBox{
+		height: 50px;
+	}
+	.title{
+		font-size: 14px;
+		margin: 0 16px;
+		padding: 5px 0;
+		width: 140px;
+	}
+	.btnPerson{
+			position: absolute;
+			top: 10px;
+			right: 110px;
+			z-index: 999;
+			width: 92px;
+			height: 30px;
+	}
+	.btnCar{
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 999;
+		width: 92px;
+		height: 30px;
+	}
+	.btnBox{
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		flex-direction:row;
+		flex-wrap: wrap;
+        justify-content: flex-start;
+		width: 750rpx;
+	}
+	.btnLeft{
+		background-color: #3da7ff;
+		border-width: 0;
+		border-radius: 0;
+		padding: 12px;
+		flex:1;
+	}
+	.btnRight{
+		background-color: #ed5f5e;
+		border-width: 0;
+		border-radius: 0;
+		flex:1;
+		padding: 12px;
+	}
+	.btnText{
+		color: #FFFFFF;
+	}
+	.tagBox{
+		flex-direction:row;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		margin: 0 8px;
+	}
+	.tag{
+		color: #a4a4a4;
+		font-size: 12px;
+		padding: 5px 10px;
+		background-color: #ededed;
+		border-radius: 4px;
+		border-style:solid;
+		border-color:#a4a4a4;
+		border-width:1rpx;
+		margin-left: 8px;
+	}
+	.fkTitle{
+		padding: 5px 16px;
+		font-size: 14px;
+		flex-direction:row;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+	}
+	.fknr{
+		font-size: 14px;
+	}
+	.bt{
+		font-size: 14px;
+		color: #f06060;
+	}
+	 .textarea {
+	    font-size: 14px;
+	    color: #666666;
+		padding: 0 16px;
+	    border-style:solid;
+	    border-color:#e8e8e8;
+	    border-bottom-width:1rpx;
+		height: 80px;
+	  } 
+	  .idcard_title {
+		padding: 5px 16px;
+	  }
+	  .kssr{
+		  color: #a8a9ae;
+		  font-size: 14px;
+	  }
+</style>

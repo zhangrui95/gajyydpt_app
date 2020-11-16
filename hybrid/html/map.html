@@ -5,7 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
     <title>维稳核查</title>
     <link rel="stylesheet" href="./minemap.css">
+	<script type="text/javascript" src="./uni.webview.1.5.2.js"></script>
     <script src="./minemap.js"></script>
+	<script src="./HGis.js"></script>
     <style>
         html, body, #map {
             width: 100%;
@@ -21,149 +23,166 @@
     <div id="map"></div>
 </body>
 <script>
-    minemap.domainUrl = "http://minedata.cn";
-    minemap.dataDomainUrl = "http://datahive.minedata.cn";
-    minemap.spriteUrl = "http://minedata.cn/minemapapi/v2.1.0/sprite/sprite";
-    minemap.serviceUrl = "http://mineservice.minedata.cn/service/";
-    
-    minemap.appKey = "634c6094eff844f39a54b2a87c133e34";
-    minemap.solution = 13999;
-    var map = new minemap.Map({
-        container: 'map',
-        style: "http://mineservice.minedata.cn/service/solu/style/id/13999",
-        center: [126.64450854063031, 45.778747557938516],
-        zoom: 15,
+	let personGps,myGps,dqs,dfk,ddc,dwj,yfk;
+	let center = {lng:126.64450854063031,lat:45.778747557938516};
+	let mapOptions = {
+        minemapOption:{
+            domainUrl: "http://minedata.cn",
+            dataDomainUrl: "http://datahive.minedata.cn",
+            spriteUrl: "http://minedata.cn/minemapapi/v2.1.0/sprite/sprite",
+            serviceUrl: "http://mineservice.minedata.cn/service/",
+            appKey: "634c6094eff844f39a54b2a87c133e34",
+            solution: 13999,
+            style: "http://mineservice.minedata.cn/service/solu/style/id/13999",/* 底图样式 */
+        },
+        center: [getQueryVariable('jd'),getQueryVariable('wd')], // 地图中心//[126.5300002679, 45.8002383102]
+        zoom: 15, //缩放比列
         pitch: 0,
-        maxZoom:17,
-        minZoom:3
-    });
-	map.on('load', function () {
-			map.loadImage('./jl.png', function (error, image) {
-				if (error) throw error;
-				map.addImage('personGps', image);
-			});
-			map.loadImage('./myGps.png', function (error, image) {
-				if (error) throw error;
-				map.addImage('myGps', image);
-			});
-	        // 增加自定义数据源、自定义图层
-	        addSources();
-	        addLayers();
-			addMySources();
-			addMyLayers();
-	    });
- function addSources() {
-		var center = map.getCenter();
-		var jsonData = {
-			"type": "FeatureCollection",
-			"features": [
-				{
-					"type": "Feature",
-					"geometry": {
-						"type": "Point",
-						"coordinates": [center.lng + 0.001, center.lat + 0.002]
-					},
-					"properties": {
-						"title": "张三",
-						"kind": "1"
-					},
-				}, {
-					"type": "Feature",
-					"geometry": {
-						"type": "Point",
-						"coordinates": [center.lng + 0.001, center.lat - 0.002]
-					},
-					"properties": {
-						"title": "李四",
-						"kind": "1"
-					},
-				}, {
-					"type": "Feature",
-					"geometry": {
-						"type": "Point",
-						"coordinates": [center.lng - 0.004, center.lat - 0.002]
-					},
-					"properties": {
-						"title": "王二",
-						"kind": "1"
-					}
-				}
-			]
-		};
-		map.addSource("pointSource", {
-			"type": "geojson",
-			"data": jsonData
-		});
+        maxZoom: 17,
+        minZoom: 3, 
+    }
+	let HMap = HGis.initMap('minemap', 'map', mapOptions); 
+    let map = HMap.map;
+	document.addEventListener('UniAppJSBridgeReady', function() {
+		  map.on('load', function () {
+		  	personGps = HGis.makeIcon(HMap, {iconUrl: './jl.png'});
+		  	myGps = HGis.makeIcon(HMap, {iconUrl: './myGps.png'});
+		  	dqs = HGis.makeIcon(HMap, {iconUrl: './dqs.png'});
+		  	dfk = HGis.makeIcon(HMap, {iconUrl: './dfk.png'});
+		  	ddc = HGis.makeIcon(HMap, {iconUrl: './ddc.png'});
+		  	dwj = HGis.makeIcon(HMap, {iconUrl: './dwj.png'});
+		  	yfk = HGis.makeIcon(HMap, {iconUrl: './yfk.png'});
+		    // 增加自定义数据源、自定义图层
+		    addSources();
+		  	addMySources();
+		  	addDqsSources(dqs,'0');
+		  	addDqsSources(dfk,'1');
+		  	addDqsSources(ddc,'2');
+		  	addDqsSources(dwj,'3');
+		  	addDqsSources(yfk,'4');
+		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+					uni.postMessage({
+					      data: {
+					         action: '0',
+							 coord,
+							 features
+					      }
+					});
+		  	},'Sources0');
+		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+		  			uni.postMessage({
+		  			      data: {
+		  			         action: '1',
+							 coord,
+							 features
+		  			      }
+		  			});
+		  	},'Sources1');
+		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+		  			uni.postMessage({
+		  			      data: {
+		  			         action: '2',
+							 coord,
+							 features
+		  			      }
+		  			});
+		  	},'Sources2');
+		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+		  			uni.postMessage({
+		  			      data: {
+		  			         action: '3',
+							 coord,
+							 features
+		  			      }
+		  			});
+		  	},'Sources3');
+		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+		  			uni.postMessage({
+		  			      data: {
+		  			         action: '4',
+							 coord,
+							 features
+		  			      }
+		  			});
+		  	},'Sources4');
+		  });
+	});
+	 function addSources() {
+		 let markOptions = {
+			 id: 'person',
+			 data: [],
+			 textField: 'title',
+			 iconSize:0.4,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
+		 }
+		 let list = [{name:'张三',gps:[center.lng + 0.001, center.lat + 0.002]},
+					 {name:'李四',gps:[center.lng + 0.001, center.lat - 0.002]},
+					 {name:'王二',gps:[center.lng - 0.004, center.lat - 0.002]}]
+		 list.map((item) => {
+			 markOptions.data.push({
+				 coordinate: item.gps,
+				  properties: {
+					title: item.name,
+				 },
+			 });
+		 });
+		 HGis.addMarkLayer(HMap, personGps, markOptions);
 	}
 
-	function addLayers() {
-		map.addLayer({
-			"id": "symbolLayer",
-			"type": "symbol",
-			"source": "pointSource",
-			"layout": {
-				"visibility": "visible",
-				"icon-image": "personGps",
-				"text-field": "{title}",
-				"text-offset": [0, 1.5], 
-				"text-anchor": "top",
-				"text-size": 12,
-				"icon-size": 0.4, 
-				"icon-allow-overlap": true,  //图标允许压盖
-				"text-allow-overlap": true,   //图标覆盖文字允许压盖
-			},
-			"paint": {
-				"text-color": '#000',
-			},
-			"minzoom": 7,
-			"maxzoom": 17.5
-		});
-	}
 	function addMySources() {
-			var center = map.getCenter();
-			var jsonData = {
-				"type": "FeatureCollection",
-				"features": [
-					{
-						"type": "Feature",
-						"geometry": {
-							"type": "Point",
-							"coordinates": [center.lng, center.lat]
-						},
-						"properties": {
-							"kind": "0"
-						},
-					},
-				]
-			};
-			map.addSource("myGpsSource", {
-				"type": "geojson",
-				"data": jsonData
-			});
+		let markOptions = {
+					 id: 'myGps',
+					 data: [],
+					 textField: 'title',
+					 iconSize:0.3,
+					 textOffset: [0, 1.5],
+					 textSize: 12,
 		}
-	
-		function addMyLayers() {
-			map.addLayer({
-				"id": "myGps",
-				"type": "symbol",
-				"source": "myGpsSource",
-				"layout": {
-					"visibility": "visible",
-					"icon-image": "myGps",
-					"text-field": "{title}",
-					"text-offset": [0, 2],
-					"text-anchor": "top",
-					"text-size": 12,
-					"icon-size": 0.3, 
-					"icon-allow-overlap": true,  //图标允许压盖
-					"text-allow-overlap": true,   //图标覆盖文字允许压盖
-				},
-				"paint": {
-					"text-color": '#000',
-				},
-				"minzoom": 7,
-				"maxzoom": 17.5
-			});
+		let list = [{gps:[center.lng, center.lat]}]
+		list.map((item) => {
+			 markOptions.data.push({
+				 coordinate: item.gps,
+				  properties: {
+					title: '',
+				 },
+			 });
+		});
+		HGis.addMarkLayer(HMap, myGps, markOptions);
+	}
+	function addDqsSources(image,type) {
+		let markOptions = {
+					 id: 'Sources'+ type,
+					 data: [],
+					 textField: 'title',
+					 iconSize:0.35,
+					 textOffset: [0, 1.5],
+					 textSize: 12,
 		}
+		let list = type == "0" ? [{gps:[center.lng - 0.001, center.lat + 0.001]}] :  
+		type == "1" ? [{gps:[center.lng - 0.001, center.lat + 0.002]}] :
+		type == "2" ? [{gps:[center.lng + 0.002, center.lat - 0.001]}] :
+		type == "3" ? [{gps:[center.lng - 0.001, center.lat - 0.003]}] :
+		[{gps:[center.lng + 0.001, center.lat + 0.003]}]
+		list.map((item) => {
+			 markOptions.data.push({
+				 coordinate: item.gps,
+				  properties: {
+					title: '',
+				 },
+			 });
+		});
+		HGis.addMarkLayer(HMap, image, markOptions);		
+	}
+	function getQueryVariable(variable)
+	{
+	       var query = window.location.search.substring(1);
+	       var vars = query.split("&");
+	       for (var i=0;i<vars.length;i++) {
+	               var pair = vars[i].split("=");
+	               if(pair[0] == variable){return pair[1];}
+	       }
+	       return(false);
+	}
 </script>
 </html>

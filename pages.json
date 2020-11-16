@@ -74,6 +74,15 @@
             }
             
         }
+        ,{
+            "path" : "pages/mapDetail/mapDetail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "警情详情",
+                "enablePullDownRefresh": false
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
