@@ -331,7 +331,7 @@ $list-item-pd: $uni-spacing-col-lg $uni-spacing-row-lg;
 	flex-direction: row;
 	justify-content: flex-end;
 	align-items: center;
-	max-width: 82px;
+	width: 82px;
 }
 
 .uni-list-item__header {

@@ -222,7 +222,7 @@
 							});
 							setTimeout(function() {
 								uni.navigateTo({
-									url: '/pages/index/index'
+									url: '/pages/map/map'
 								})
 							}, 400)
 

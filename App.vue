@@ -17,7 +17,7 @@
 		onLaunch: function() {
 			plus.device.getInfo({
 				success: (e) => {
-					uni.setStorageSync('imei', e.imei)
+					uni.setStorageSync('imei', e.imei) 
 				}
 			})
 			db.openDB('data')
@@ -210,7 +210,7 @@
 						console.log(appCredential, userCredential)
 						writeFile(`获取票据成功`, '统一认证返回信息')
 						uni.switchTab({
-							url: `/pages/index/index`
+							url: `/pages/map/map`
 						})
 						var personId = JSON.parse(userCredential).credential.load.userInfo.userId
 						console.log(personId)

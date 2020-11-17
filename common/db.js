@@ -178,7 +178,7 @@ function insertData(that, type, sql) {
 
 			} else {
 				uni.navigateTo({
-					url: "/pages/index/index"
+					url: "/pages/map/map"
 				})
 			}
 

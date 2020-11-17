@@ -23,7 +23,7 @@
 		</view>
 		<view class="bdJg"  v-if="bdReturn === 'success'">
 			<image src="../../static/success.png" class="bdIcon"></image>
-			<text class="bdTextSuccess">人像比对通过</text>
+			<text class="bdTextSuccess">{{data}}人像比对通过</text>
 		</view>
 		<button class="btn" v-if="bdReturn" @click="getBack">完成</button>
 	</view>
@@ -34,17 +34,61 @@
 		pathToBase64
 	} from 'image-tools';
 	var FaceInit = plus.android.importClass('com.hylink.wwpc.faceutil.FaceContrastUtil');
+	var face = new FaceInit();
 	export default {
 		data() {
 			return {
 				imgData:[],
 				bdReturn:'',
-				idCardImg:''
+				idCardImg:'',
+				data:'',
 			}
+		},
+		onShow() {
+			this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
+			this.eventManager = this.myEventManager.getMyEventManager();
+			//新建监听器
+			var _this = this
+			this.myListener = plus.android.implements("com.hylink.wwpc.MyListener", {
+				onChange: function(event) {
+					//导入类  
+					plus.android.importClass(event);
+					console.log('获取返回数据1：',event);
+					console.log('获取返回数据2：',event.getData());
+					// alert(JSON.parse(event.getData()));
+					_this.data = JSON.parse(event);
+				}
+			})
+			this.eventManager.addListener("faceinfo", this.myListener);
+			this.eventManager = null
+			this.myEventManager = null
+			this.myListener = null
+		},
+		onHide() {
+			this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
+			this.eventManager = this.myEventManager.getMyEventManager();
+			this.eventManager.removeListener("faceinfo");
 		},
 		onLoad:function(option){
 			this.idCardImg = option.idCardImg;
 			console.log('idCardImg=====>',idCardImg)
+			// this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
+			// this.eventManager = this.myEventManager.getMyEventManager();
+			// //新建监听器
+			// var _this = this
+			// this.myListener = plus.android.implements("com.hylink.wwpc.MyListener", {
+			// 	onChange: function(event) {
+			// 		//导入类  
+			// 		plus.android.importClass(event);
+			// 		console.log('获取返回数据：',JSON.parse(event.getData()));
+			// 		alert(JSON.parse(event.getData()));
+			// 		_this.data = JSON.parse(event.getData());
+			// 	}
+			// })
+			// this.eventManager.addListener("faceinfo", this.myListener);
+			// this.eventManager = null
+			// this.myEventManager = null
+			// this.myListener = null
 		},
 		methods: {
 			// 预览
@@ -85,11 +129,10 @@
 						.then(base64 => {
 							let arrayBuffer = uni.base64ToArrayBuffer(base64);
 							let array = new Uint8Array(arrayBuffer);
-							console.log('arrayBuffer',array);
 							var main = plus.android.runtimeMainActivity();
-							var face = new FaceInit();
+							face.init();
+							face.base64Contrast(base64.split(',')[1],base64.split(',')[1]);
 							uni.hideLoading();
-							face.base64Contrast(base64,base64);
 							_this.bdReturn = 'success';
 						})
 						.catch(error => {
@@ -111,6 +154,7 @@
 						_this.imgData.push({
 							img: url
 						});
+						console.log('url====>',url);
 						_this.uploadData(url);
 					}
 				});

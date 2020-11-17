@@ -138,7 +138,7 @@
 				var _this = this
 				setTimeout(function() {
 					uni.navigateTo({
-						url: `/pages/index/index?type=${type}`
+						url: `/pages/map/map?type=${type}`
 					})
 				}, 400)
 			}

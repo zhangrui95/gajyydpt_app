@@ -28,7 +28,7 @@
 								<view class="example-body">
 									{{title}}
 									<view class="tag-view">
-										<uni-tag inverted="true" :text="isRead=='0'?'未确认':'已确认'" :type="isRead=='0'?'error':'success'" />
+										<uni-tag size="small" :text="isRead=='0'?'未确认':'已确认'" :type="isRead=='0'?'error':'success'" />
 									</view>
 								</view>
 							</block>

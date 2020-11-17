@@ -54,8 +54,8 @@
 				</view>
 				<view class="opertion_list">
 					<uni-list>
-						<uni-list-item clickable @click="setBuckle" title="卡口设置" thumb="../../static/weizhi.png" link thumb-size="sm"
-						 :rightText="blckle?blckle:''"></uni-list-item>
+					<!-- 	<uni-list-item clickable @click="setBuckle" title="卡口设置" thumb="../../static/weizhi.png" link thumb-size="sm"
+						 :rightText="blckle?blckle:''"></uni-list-item> -->
 						<!-- <uni-list-item clickable @click="routerNotic" title="通知通告" thumb="../../static/tz.png" link thumb-size="sm">
 						</uni-list-item> -->
 						<uni-list-item clickable @click="routerNav('人员')" title="人员核查历史" thumb="../../static/ryls.png" link thumb-size="sm">
