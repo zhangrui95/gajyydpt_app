@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<web-view :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd" :style="{width:'100%', height:'150px'}" @onPostMessage="message"></web-view>
+		<web-view v-if="detail && detail.lng && detail.lat" :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd+ '&type=' + type + '&isDtail=true'" :style="{width:'100%', height:'150px'}" @onPostMessage="message"></web-view>
 		<image class="sj" src="/static/sj.png"></image>
 		<view class="detailBox">
 			<view class="titleBox">
@@ -17,6 +17,10 @@
 				</view>
 				<view class="listItem">
 					<text class="listTitle">警情地点：{{detail.afdd}}</text>
+					<view class="dhbox" @click="getDh()">
+						<uni-icons type="location-filled" color="#008fff" size="16"></uni-icons>
+						<text class="dhText">导航</text>
+					</view>
 				</view>
 				<view class="listItem">
 					<text class="listTitle">报警电话：</text>
@@ -104,7 +108,14 @@
 <script>
 	import uniList from "@/components/uni-list/uni-list.vue"
 	import uniListItem from "@/components/uni-list-item/uni-list-item.vue"
+	import request from '@/common/request.js'
 	var db = require('../../common/db.js');
+	import {
+		getPatrolInquiriesJson,
+		operationInterface,
+		convertImgToBase64,
+		oneLine
+	} from '../../utils/index.js'
 	export default {
 		data() {
 			return {
@@ -119,12 +130,14 @@
 		onLoad:function(option){
 			console.log('option111',option.type);
 			this.jd = JSON.parse(option.coord)[0];
-			this.wd = JSON.parse(option.coord)[1] + 0.0006;
+			this.wd = JSON.parse(option.coord)[1];
+			console.log('option.coord====>',option.coord)
 			this.type = option.type;
-			request('/jq/detailJq', {notice_category:option.category || '',notice_id:option.id}, "POST", "http://192.168.104.137:7702").then(res => {
-				console.log('详情========>',res)
-				this.detail = res;
-			});
+			// request('/jq/detailJq', {notice_category:option.category || '',notice_id:option.id}, "POST", "http://192.168.104.137:7702").then(res => {
+			// 	console.log('详情========>',res.result)
+			// 	this.detail = res.result;
+			// });
+			this.detail = {police_alarm_id:'A743856734678',notice_category:'1',afdd:'中源大道1993号',lng:126.5300002679,lat:45.8002383102}
 			this.selectList();
 		},
 		methods: {
@@ -133,7 +146,13 @@
 			},
 			routerAdd(type) {
 				uni.navigateTo({
-					url: `/pages/personCheck/index?type=${type}`
+					url: `/pages/personCheck/index?type=${type}&id=${this.detail.notice_id}`
+				});
+			},
+			getDh(){
+				let _this = this;
+				uni.navigateTo({
+					url: `/pages/navigationGps/navigationGps?lng=${_this.detail.lng}&lat=${_this.detail.lat}`
 				});
 			},
 			selectList(type) {
@@ -148,7 +167,7 @@
 				FROM
 					collectDataTable 
 				WHERE
-					dataType = ${this.params == '车辆' ? 16 : 15}
+					jqId = ${this.detail.notice_id}
 					${this.radioValue == '0' || this.radioValue == '' ? 'and 1=1' : this.radioValue == '1' ? 'AND checkException = 0' : 'AND checkException = 1'}
 					${type == 'noSearch' ? 'AND date(createdAt) =  date("now")' : `AND data LIKE '%${search}%' 
 					AND createdAt BETWEEN '${this.date} ${this.time}:00'
@@ -268,6 +287,20 @@
 </script>
 
 <style>
+	.dhbox{
+		flex-direction:row;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		position: absolute;
+		right:10px;
+		top: 10px;
+	}
+	.dhText{
+		color: #008fff;
+		font-size: 13px;
+		line-height: 16px;
+		height: 16px;
+	}
 	.listItem{
 		flex-direction:row;
 		flex-wrap: wrap;

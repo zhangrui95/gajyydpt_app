@@ -207,6 +207,7 @@
 				isNotic: '',
 				imgBack: '0',
 				faceTest:'',
+				jqId:''
 			}
 		},
 		onShow() {
@@ -291,8 +292,9 @@
 			this.eventManager.removeListener("onShow");
 		},
 		onLoad: function(option) {
-			this.params = option.type
-			this.source = option.source
+			this.params = option.type;
+			this.source = option.source;
+			this.jqId = option.id || '';
 			uni.setNavigationBarTitle({
 				title: `${option.type}核查`
 			})
@@ -666,7 +668,7 @@
 				}
 				// db.openDB('data')
 				db.insertData(this, type, oneLine `
-				INSERT INTO collectDataTable ( optargetId, policeIdcard, data, dataType, isUpload, checkException,createdAt )
+				INSERT INTO collectDataTable ( optargetId, policeIdcard, data, dataType, isUpload, checkException,createdAt,jqId )
 				VALUES
 					(
 					'${optargetId}',
@@ -675,7 +677,8 @@
 					'${this.params == '车辆' ? 16 : 15}',
 					'0',
 					${checkException},
-					'${moment().format('YYYY-MM-DD HH:mm:ss')}')
+					'${moment().format('YYYY-MM-DD HH:mm:ss')}'),
+					'${this.jqId}'
 						`)
 				// db.closeDB('data')
 			},

@@ -83,6 +83,14 @@
             }
             
         }
+        ,{
+            "path" : "pages/navigationGps/navigationGps",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "导航"
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "white",

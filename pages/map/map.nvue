@@ -194,10 +194,14 @@
 			// this.blckle = option.type;
 			uni.getLocation({
 			    type: 'wgs84',
-			    success: function (res) {
-					_this.jd = res.longitude;
-					_this.wd = res.latitude;
-			    }
+			    success: function (res) {//[126.5300002679,45.8002383102]
+					_this.jd = res.longitude ? res.longitude : 126.5300002679; 
+					_this.wd = res.latitude ? res.latitude : 45.8002383102;
+			    },
+				fail:function(){
+					_this.jd = 126.5300002679;
+					_this.wd = 45.8002383102;
+				}
 			});
 			this.getMyGps();
 			this.getAllJq();
@@ -257,6 +261,9 @@
 				this.$refs.webview.evalJs("jsfunction("+JSON.stringify(data)+")");
 			},
 			getDetail(item){
+				item.jd = 126.5390002679;
+				item.wd = 45.8052383102;
+				item.notice_status = '0';
 				let type = item.notice_status;
 				let id = item.notice_id;
 				let coord = JSON.stringify([item.jd,item.wd]);
@@ -293,7 +300,9 @@
 				}else{
 					this.showJq = true;
 					request('/jq/getJqStatusList', condition, "POST", "http://192.168.104.137:7702").then(res => {
+						console.log('res.result',res.result)
 							this.jqList = res.result.list;
+							this.jqList = [{notice_category:'1',notice_id:'001'}];
 					});
 				}
 				this.type = type;

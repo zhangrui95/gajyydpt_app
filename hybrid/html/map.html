@@ -75,7 +75,12 @@
 		  	yfk = HGis.makeIcon(HMap, {iconUrl: './yfk.png'});
 			isLoad =  true;
 		    // 增加自定义数据源、自定义图层
-		  	addMySources([getQueryString('jd'),getQueryString('wd')]);
+			if(getQueryString('isDtail')){
+				let list = [{jd:getQueryString('jd'),wd:getQueryString('wd'),notice_status:getQueryString('type')}]
+				addJqSources(list);
+			}else{
+				addMySources([getQueryString('jd'),getQueryString('wd')]);
+			}
 		  	// addDqsSources(dqs,'0');
 		  	// addDqsSources(dfk,'1');
 		  	// addDqsSources(ddc,'2');
