@@ -17,13 +17,14 @@
 				</image>
 			</view>
 		</view>
-		<view class="bdJg" v-if="bdReturn === 'error'">
+		<view class="bdJg" v-if="(data && data < 60) || data === 0">
 			<image src="../../static/error.png" class="bdIcon"></image>
-			<text class="bdText">人像比对失败</text>
+			<text class="bdText" v-if="data === 0 || data < 0">人像比对失败</text>
+			<text class="bdText" v-if="data && data < 60 && data > 0">相似度：{{data}}%，不通过</text>
 		</view>
-		<view class="bdJg"  v-if="bdReturn === 'success'">
+		<view class="bdJg"  v-if="data >= 60">
 			<image src="../../static/success.png" class="bdIcon"></image>
-			<text class="bdTextSuccess">{{data}}人像比对通过</text>
+			<text class="bdTextSuccess">相似度：{{data}}%，通过</text>
 		</view>
 		<button class="btn" v-if="bdReturn" @click="getBack">完成</button>
 	</view>
@@ -35,6 +36,8 @@
 	} from 'image-tools';
 	var FaceInit = plus.android.importClass('com.hylink.wwpc.faceutil.FaceContrastUtil');
 	var face = new FaceInit();
+	var AssetsHelper = plus.android.importClass('com.hylink.wwpc.faceutil.AssetsHelper');
+	var Helper = new AssetsHelper();
 	export default {
 		data() {
 			return {
@@ -53,13 +56,20 @@
 				onChange: function(event) {
 					//导入类  
 					plus.android.importClass(event);
-					console.log('获取返回数据1：',event);
-					console.log('获取返回数据2：',event.getData());
-					// alert(JSON.parse(event.getData()));
-					_this.data = JSON.parse(event);
+					console.log('faceinfo获取返回数据：',event.getData());
+					_this.data = parseInt(event.getData());
+					_this.bdReturn = _this.data && _this.data > 60 ? 'success' : 'fail';
 				}
-			})
+			});
+			this.myListenerSuc = plus.android.implements("com.hylink.wwpc.MyListener", {
+				onChange: function(event) {
+					//导入类  
+					plus.android.importClass(event);
+					console.log('isSuc获取返回数据：',event.getData());
+				}
+			}) 
 			this.eventManager.addListener("faceinfo", this.myListener);
+			this.eventManager.addListener("isSuc", this.myListenerSuc);
 			this.eventManager = null
 			this.myEventManager = null
 			this.myListener = null
@@ -68,27 +78,12 @@
 			this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
 			this.eventManager = this.myEventManager.getMyEventManager();
 			this.eventManager.removeListener("faceinfo");
+			this.eventManager.removeListener("isSuc");
 		},
 		onLoad:function(option){
+			Helper.copyAssetsToDst();
 			this.idCardImg = option.idCardImg;
 			console.log('idCardImg=====>',idCardImg)
-			// this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
-			// this.eventManager = this.myEventManager.getMyEventManager();
-			// //新建监听器
-			// var _this = this
-			// this.myListener = plus.android.implements("com.hylink.wwpc.MyListener", {
-			// 	onChange: function(event) {
-			// 		//导入类  
-			// 		plus.android.importClass(event);
-			// 		console.log('获取返回数据：',JSON.parse(event.getData()));
-			// 		alert(JSON.parse(event.getData()));
-			// 		_this.data = JSON.parse(event.getData());
-			// 	}
-			// })
-			// this.eventManager.addListener("faceinfo", this.myListener);
-			// this.eventManager = null
-			// this.myEventManager = null
-			// this.myListener = null
 		},
 		methods: {
 			// 预览
@@ -131,9 +126,8 @@
 							let array = new Uint8Array(arrayBuffer);
 							var main = plus.android.runtimeMainActivity();
 							face.init();
-							face.base64Contrast(base64.split(',')[1],base64.split(',')[1]);
+							face.base64Contrast(_this.idCardImg.split(',')[1],base64.split(',')[1]);
 							uni.hideLoading();
-							_this.bdReturn = 'success';
 						})
 						.catch(error => {
 							console.error(error)

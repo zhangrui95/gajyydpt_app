@@ -24,7 +24,8 @@
 </body>
 <script>
 	let personGps,myGps,dqs,dfk,ddc,dwj,yfk;
-	let center = {lng:126.64450854063031,lat:45.778747557938516};
+	let center = {lng:126.5300002679,lat:45.8002383102}; 
+	let isLoad =  false;
 	let mapOptions = {
         minemapOption:{
             domainUrl: "http://minedata.cn",
@@ -35,7 +36,7 @@
             solution: 13999,
             style: "http://mineservice.minedata.cn/service/solu/style/id/13999",/* 底图样式 */
         },
-        center: [getQueryVariable('jd'),getQueryVariable('wd')], // 地图中心//[126.5300002679, 45.8002383102]
+        center: [getQueryString('jd'),getQueryString('wd')], // 地图中心//[126.5300002679,45.8002383102]
         zoom: 15, //缩放比列
         pitch: 0,
         maxZoom: 17,
@@ -43,6 +44,26 @@
     }
 	let HMap = HGis.initMap('minemap', 'map', mapOptions); 
     let map = HMap.map;
+	window.jsfunction = function(data){
+		let center = data[0].gps_point
+		let list = data;
+		if(isLoad){
+			 addSources(list,center);
+		}
+	}
+	window.allJqfunction = function(data){
+		let list = data;
+		if(isLoad){
+			addJqSources(list);
+		}
+	}
+	window.myGps = function(coord){
+		let coords = coord;
+		if(isLoad){
+			alert(coord);
+			addMySources(coords);
+		}
+	}
 	document.addEventListener('UniAppJSBridgeReady', function() {
 		  map.on('load', function () {
 		  	personGps = HGis.makeIcon(HMap, {iconUrl: './jl.png'});
@@ -52,62 +73,73 @@
 		  	ddc = HGis.makeIcon(HMap, {iconUrl: './ddc.png'});
 		  	dwj = HGis.makeIcon(HMap, {iconUrl: './dwj.png'});
 		  	yfk = HGis.makeIcon(HMap, {iconUrl: './yfk.png'});
+			isLoad =  true;
 		    // 增加自定义数据源、自定义图层
-		    addSources();
-		  	addMySources();
-		  	addDqsSources(dqs,'0');
-		  	addDqsSources(dfk,'1');
-		  	addDqsSources(ddc,'2');
-		  	addDqsSources(dwj,'3');
-		  	addDqsSources(yfk,'4');
+		  	addMySources([getQueryString('jd'),getQueryString('wd')]);
+		  	// addDqsSources(dqs,'0');
+		  	// addDqsSources(dfk,'1');
+		  	// addDqsSources(ddc,'2');
+		  	// addDqsSources(dwj,'3');
+		  	// addDqsSources(yfk,'4');
 		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+				    let layer = features[0].properties.layer ? JSON.parse(features[0].properties.layer) : {};
+					let coordinates = features[0].geometry.coordinates;
 					uni.postMessage({
 					      data: {
 					         action: '0',
-							 coord,
-							 features
+							 coordinates,
+							 layer
 					      }
 					});
 		  	},'Sources0');
 		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+				let layer = features[0].properties.layer ? JSON.parse(features[0].properties.layer) : {};
+				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
 		  			         action: '1',
-							 coord,
-							 features
+							 coordinates,
+							 layer
 		  			      }
 		  			});
 		  	},'Sources1');
 		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+				let layer = features[0].properties.layer ? JSON.parse(features[0].properties.layer) : {};
+				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
 		  			         action: '2',
-							 coord,
-							 features
+							coordinates,
+							layer
 		  			      }
 		  			});
 		  	},'Sources2');
 		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+				let layer = features[0].properties.layer ? JSON.parse(features[0].properties.layer) : {};
+				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
 		  			         action: '3',
-							 coord,
-							 features
+							coordinates,
+							layer
 		  			      }
 		  			});
 		  	},'Sources3');
 		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
+				let layer = features[0].properties.layer ? JSON.parse(features[0].properties.layer) : {};
+				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
 		  			         action: '4',
-							 coord,
-							 features
+							 coordinates,
+							 layer
 		  			      }
 		  			});
 		  	},'Sources4');
 		  });
 	});
-	 function addSources() {
+	 function addSources(data,center) {
+		 HGis.removeLayer(HMap, 'person');
 		 let markOptions = {
 			 id: 'person',
 			 data: [],
@@ -116,39 +148,139 @@
 			 textOffset: [0, 1.5],
 			 textSize: 12,
 		 }
-		 let list = [{name:'张三',gps:[center.lng + 0.001, center.lat + 0.002]},
-					 {name:'李四',gps:[center.lng + 0.001, center.lat - 0.002]},
-					 {name:'王二',gps:[center.lng - 0.004, center.lat - 0.002]}]
-		 list.map((item) => {
+		 data.map((item) => {
 			 markOptions.data.push({
-				 coordinate: item.gps,
+				 coordinate: item.gps_point,
 				  properties: {
-					title: item.name,
+					title: '',
 				 },
 			 });
 		 });
 		 HGis.addMarkLayer(HMap, personGps, markOptions);
 	}
 
-	function addMySources() {
+	function addMySources(coords) {
+		alert('经度：'+coords[0]+'，纬度：'+coords[1])
+		HGis.removeLayer(HMap,'myGps');
 		let markOptions = {
 					 id: 'myGps',
-					 data: [],
+					 data: [{
+						 coordinate: coords,
+						  properties: {
+							title: '',
+						 },
+					 }],
 					 textField: 'title',
 					 iconSize:0.3,
 					 textOffset: [0, 1.5],
 					 textSize: 12,
 		}
-		let list = [{gps:[center.lng, center.lat]}]
-		list.map((item) => {
-			 markOptions.data.push({
-				 coordinate: item.gps,
-				  properties: {
-					title: '',
-				 },
-			 });
-		});
 		HGis.addMarkLayer(HMap, myGps, markOptions);
+	}
+	function addJqSources(list){
+		HGis.removeLayer(HMap, 'Sources0');
+		HGis.removeLayer(HMap, 'Sources1');
+		HGis.removeLayer(HMap, 'Sources2');
+		HGis.removeLayer(HMap, 'Sources3');
+		HGis.removeLayer(HMap, 'Sources4');
+		let markOptionsDqs = {
+			 id: 'Sources0',
+			 data: [],
+			 textField: 'title',
+			 iconSize:0.35,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
+		}
+		let markOptionsYqs = {
+			 id: 'Sources1',
+			 data: [],
+			 textField: 'title',
+			 iconSize:0.35,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
+		}
+		let markOptionsYdd = {
+			 id: 'Sources2',
+			 data: [],
+			 textField: 'title',
+			 iconSize:0.35,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
+		}
+		let markOptionsYwj = {
+			 id: 'Sources3',
+			 data: [],
+			 textField: 'title',
+			 iconSize:0.35,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
+		}
+		let markOptionsYfk = {
+			 id: 'Sources4',
+			 data: [],
+			 textField: 'title',
+			 iconSize:0.35,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
+		}
+		list.map((item) => {
+			if(item.jd && item.wd){
+				switch(item.notice_status) {
+				     case '0':
+						   markOptionsDqs.data.push({
+							 coordinate: [item.jd,item.wd],
+							  properties: {
+								title: '',
+								layer: item,
+							 },
+						   });
+				           break;
+				     case '1':
+				        markOptionsYqs.data.push({
+							 coordinate: [item.jd,item.wd],
+							  properties: {
+								title: '',
+								layer: item,
+							 },
+				        });
+				        break;
+					case '2':
+					   markOptionsYdd.data.push({
+							 coordinate: [item.jd,item.wd],
+							  properties: {
+								title: '',
+								layer: item,
+							 },
+					   });
+					   break;
+				   case '3':
+					  markOptionsYwj.data.push({
+							 coordinate: [item.jd,item.wd],
+							  properties: {
+								title: '',
+								layer: item,
+							 },
+					  });
+					  break;
+				  case '4':
+					 markOptionsYfk.data.push({
+							 coordinate: [item.jd,item.wd],
+							  properties: {
+								title: '',
+								layer: item,
+							 },
+					 });
+					 break;
+				 default:
+					break;
+				} 
+			}
+		});
+		HGis.addMarkLayer(HMap, dqs, markOptionsDqs);
+		HGis.addMarkLayer(HMap, dfk, markOptionsYqs);
+		HGis.addMarkLayer(HMap, ddc, markOptionsYdd);
+		HGis.addMarkLayer(HMap, dwj, markOptionsYwj);
+		HGis.addMarkLayer(HMap, yfk, markOptionsYfk);
 	}
 	function addDqsSources(image,type) {
 		let markOptions = {
@@ -169,6 +301,7 @@
 				 coordinate: item.gps,
 				  properties: {
 					title: '',
+					layer: item,
 				 },
 			 });
 		});
@@ -183,6 +316,13 @@
 	               if(pair[0] == variable){return pair[1];}
 	       }
 	       return(false);
+	}
+	function getQueryString(name) {
+	  let path = window.location.search;
+	  var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+	  var r = path.substr(1).match(reg);
+	  if (r != null) return unescape(r[2]);
+	  return null;
 	}
 </script>
 </html>

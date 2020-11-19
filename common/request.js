@@ -28,8 +28,7 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 		uni.getNetworkType({
 			success: function (res) {
 				let requestUrl = ''
-				let resourceList = JSON.parse(uni.getStorageSync('resourceList'))
-				console.log(resourceList, url)
+				let resourceList = uni.getStorageSync('resourceList') ? JSON.parse(uni.getStorageSync('resourceList')) : ''
 				switch (url) {
 					case '/data/getCheckPointListForClient':
 						requestUrl = resourceList.find((item) => item.resourceId ==
@@ -64,9 +63,9 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 							'230000000000-3-0100-dea86786075d41c796859bbabb5f4d78').resourceAddress
 						break;
 					default:
+						requestUrl = urlType + url;
 						break;
 				}
-				console.log(requestUrl)
 				if (res.networkType != 'none') {
 					uni.setStorageSync('networkType', 'yes')
 					if (upLoadType == 'file') {
@@ -93,7 +92,6 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 							header: header,
 							dataType: 'json',
 						}).then((response) => {
-							console.log(response)
 							setTimeout(function () {
 								uni.hideLoading();
 							}, 200);

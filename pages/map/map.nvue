@@ -1,25 +1,23 @@
 <template>
 	<view :style="{width:'100%', height:height+ 'px'}" ref="map" id="map">
-		<web-view src="/hybrid/html/map.html?jd=126.64450854063031&wd=45.778747557938516" :style="{width:'100%', height:height+ 'px'}" @onPostMessage="message"></web-view>
+		<web-view :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd"  @pagestart="onPageStart"  ref="webview" :style="{width:'100%', height:height+ 'px'}" @onPostMessage="message"></web-view>
 		<image class="wdcj" src="/static/wdcj.png" @click="getshowCj"></image>
 		<image class="sj" src="/static/sj.png" v-if="showCj"></image>
 		<view class="cjList" v-if="showCj">
-			<text class="cjItem itemBorder" @click="getJqList(0)">待签收(10)</text>
-			<text class="cjItem itemBorder" @click="getJqList(1)" style="color: #05a2f6;">已签收(10)</text>
-			<text class="cjItem itemBorder" @click="getJqList(2)" style="color: #feaf57;">已到达(10)</text>
-			<text class="cjItem itemBorder" @click="getJqList(3)" style="color: #1afa29;">已完结(10)</text>
-			<text class="cjItem" @click="getJqList(4)" style="color: #AAAAAA;">已反馈(10)</text>
+			<text class="cjItem itemBorder" @click="getJqList('0')">待签收({{dqsNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('1')" style="color: #05a2f6;">已签收({{yqsNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('2')" style="color: #feaf57;">已到达({{yddNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('3')" style="color: #1afa29;">已完结({{ywjNum}})</text>
+			<text class="cjItem" @click="getJqList('4')" style="color: #AAAAAA;">已反馈({{yfkNum}})</text>
 		</view>
-		<view class="jqList" v-if="showCj && showJq">
-			<uni-list>
-			    <uni-list-item title="列表文字列…" note="列表描述信息" rightText="2020.07.29 09:40:22"></uni-list-item>
-				<uni-list-item title="列表文字" note="列表描述信息…" rightText="2020.07.29 09:40:22"></uni-list-item>
-				<uni-list-item title="列表文字列…" note="列表描述信息…" rightText="2020.07.29 09:40:22"></uni-list-item>
-				<uni-list-item title="列表文字列…" note="列表描述信息" rightText="2020.07.29 09:40:22"></uni-list-item>
-				<uni-list-item title="列表文字" note="列表描述信息…" rightText="2020.07.29 09:40:22"></uni-list-item>
-				<uni-list-item title="列表文字列…" note="列表描述信息…" rightText="2020.07.29 09:40:22"></uni-list-item>
-			</uni-list>
-		</view>
+		<scroller class="jqList" v-if="showCj && showJq && jqList && jqList.length > 0">
+			<view class="hcItem" v-for="(item,index) in jqList" @click="getDetail(item)">
+				<text class="nameBt">{{item.bt}}</text>
+				<text class="detailItem">发布时间：{{item.fbsj}}</text>
+				<text class="detailItem">发布单位：{{item.fbdwmc}}</text>
+				<text class="detailItem">发布人员：{{item.fbrxm}}</text>	
+			</view>
+		</scroller>
 		<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')"></image>
 		<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"></image>
 		<view class="bottomBox">
@@ -92,12 +90,16 @@
 	import uniList from "@/components/uni-list/uni-list.vue"
 	import uniListItem from "@/components/uni-list-item/uni-list-item.vue"
 	import uniPopupDialog from '../../components/uni-popup/uni-popup-dialog.vue';
+	import request from '@/common/request.js'
+	import moment from 'moment'
 	import {
 		oneLine,
+		searchInterface,
 		getCredential
 	} from '../../utils';
-	var db = require('../../common/db.js')
-	var convert = require('xml-js')
+	var db = require('../../common/db.js');
+	var convert = require('xml-js');
+	let time;
 	export default {
 		data() {
 			return {
@@ -108,18 +110,25 @@
 				msgType: 'warn',
 				personNum: 0,
 				carNum: 0,
-				blckle: '',
+				// blckle: '',
 				userinfo: uni.getStorageSync('userCredential') ? getCredential().userCredential : '',
 				updateId: '',
 				version: plus.runtime.version,
 				isNotic: '',
+				jd:'',
+				wd:'',
+				dqsNum:0,
+				yqsNum:0,
+				yddNum:0,
+				ywjNum:0,
+				yfkNum:0,
+				jqList:[],
 			}
 		},
 		components: {
 			uniPopupDialog
 		},
 		onNavigationBarButtonTap(e) {
-		    console.log("success",e)        
 			if(e.float == "left"){
 				this.handleClick();
 			}else if(e.float == "right"){
@@ -127,7 +136,6 @@
 			}
 		},
 		onShow() {
-			console.log('xinxi', uni.getStorageSync('userCredential'))
 			if (uni.getStorageSync('userCredential')) {
 				this.userinfo = getCredential().userCredential
 			}
@@ -143,32 +151,128 @@
 			uni.$on('isRead', (data) => {
 				this.isNotic = data;
 			})
-			// db.closeDB('data')
 		},
-		onLoad() {
-			let _this = this
+		onHide() {
+			if(time){
+				clearInterval(time);
+			}
+		},
+		onLoad() { 
+			let _this = this;
+			let condition = {
+				startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
+				endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
+			};
+			request('/jq/getJqStatusListCount', condition , "POST", "http://192.168.104.137:7702").then(res => {
+				console.log('res.result.list',res)
+					res.result.list.map((item)=>{
+						if(item.notice_status === '0'){
+							 _this.dqsNum = item.count;
+						}else if(item.notice_status === '1'){
+							 _this.yqsNum = item.count;
+						}else if(item.notice_status === '2'){
+							 _this.yddNum = item.count;
+						}else if(item.notice_status === '3'){
+							 _this.ywjNum = item.count;
+						}else if(item.notice_status === '4'){
+							 _this.yfkNum = item.count;
+						}
+					});
+			})
 			uni.getSystemInfo({
 				success:function(res) {
 					_this.height = res.windowHeight
 				}
 			});
-			uni.getStorage({
-				key: 'buckle',
-				success: function(res) {
-					console.log('res', res)
-					_this.blckle = res.data
-				}
+			// uni.getStorage({
+			// 	key: 'buckle',
+			// 	success: function(res) {
+			// 		console.log('res', res)
+			// 		_this.blckle = res.data
+			// 	}
+			// });
+			// this.blckle = option.type;
+			uni.getLocation({
+			    type: 'wgs84',
+			    success: function (res) {
+					_this.jd = res.longitude;
+					_this.wd = res.latitude;
+			    }
 			});
-			this.blckle = option.type
+			this.getMyGps();
+			this.getAllJq();
+			this.getJwt(); 
+			time = setInterval(()=>{
+				this.getJwt(); 
+				this.getAllJq();
+				this.getMyGps();
+			},10000)
 		},
 		methods: {
-			message(evt) {
-			    console.log('接收到的消息：' + JSON.stringify(evt.detail.data[0].action));  
-				let type = JSON.stringify(evt.detail.data[0].action);
-				let coord = JSON.stringify(evt.detail.data[0].coord);
-				let features = JSON.stringify(evt.detail.data[0].features);
+			getMyGps(){
+				let _this = this;
+				uni.getLocation({
+				    type: 'wgs84',
+				    success: function (res) {
+						let condition = {
+							gps_time:moment().format('YYYY-MM-DD HH:mm:ss'),
+							imei:uni.getStorageSync('imei'),
+							x: res.longitude.toString(),
+							y: res.latitude.toString()
+						}
+						if(!_this.PageStart) {
+							return false;
+						}
+						_this.$refs.webview.evalJs("myGps("+JSON.stringify([res.longitude,res.latitude])+")");
+						request('/jwtGps/insertJwtGps', condition, "POST", "http://192.168.104.137:7702").then(res => {});
+				    }
+				});
+			},
+			getAllJq(){
+				let condition = {
+				    notice_status: '',
+					startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
+					endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
+				};
+				request('/jq/getJqStatusList', condition, "POST", "http://192.168.104.137:7702").then(res => {
+						if(!this.PageStart) {
+							return false;
+						}
+						this.$refs.webview.evalJs("allJqfunction("+JSON.stringify(res.result.allStatus)+")");
+				});
+			},
+			getJwt(){
+				request('/jwtGps/getJwtGps', {type:'警务通'}, "POST", "http://192.168.104.137:7702").then(res => {
+					this.sendMessageToWebview(res.result.list);
+				});
+			},
+			onPageStart: function(e) {
+				this.PageStart = true;
+			},
+			sendMessageToWebview(data){
+				if(!this.PageStart) {
+					return false;
+				}
+				// jsfunction 其实就是你自己在你的webview 里面写个方法。
+				this.$refs.webview.evalJs("jsfunction("+JSON.stringify(data)+")");
+			},
+			getDetail(item){
+				let type = item.notice_status;
+				let id = item.notice_id;
+				let coord = JSON.stringify([item.jd,item.wd]);
+				let category = item.notice_category;
+				// console.log('警情id：',type,id);
 				uni.navigateTo({
-					url: `/pages/mapDetail/mapDetail?type=${type}&coord=${coord}&features=${features}`
+					url: `/pages/mapDetail/mapDetail?type=${type}&coord=${coord}&id=${id}&category=${category}`
+				})
+			},
+			message(evt) {
+				let type = evt.detail.data[0].action;
+				let coord = JSON.stringify(evt.detail.data[0].coordinates);
+				let id = evt.detail.data[0].layer.notice_id;
+				let category = evt.detail.data[0].layer.notice_category;
+				uni.navigateTo({
+					url: `/pages/mapDetail/mapDetail?type=${type}&coord=${coord}&id=${id}&category=${category}`
 				})
 			},
 			getshowCj(){
@@ -179,10 +283,18 @@
 				}
 			},
 			getJqList(type){
+				let condition = {
+				    notice_status: type,
+					startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
+					endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
+				};
 				if(type == this.type){
 					this.showJq = !this.showJq;
 				}else{
 					this.showJq = true;
+					request('/jq/getJqStatusList', condition, "POST", "http://192.168.104.137:7702").then(res => {
+							this.jqList = res.result.list;
+					});
 				}
 				this.type = type;
 			},
@@ -209,9 +321,6 @@
 				})
 			},
 			dialogConfirm(done) {
-				// this.$refs.popupMessage.open()
-				// console.log('点击确认');
-				// 需要执行 done 才能关闭对话框
 				done()
 				uni.showLoading({
 					title: '清除数据中'
@@ -229,7 +338,7 @@
 				// db.closeDB('data')
 				uni.removeStorageSync('buckle');
 				uni.removeStorageSync('buckleId')
-				this.blckle = ''
+				// this.blckle = ''
 				uni.hideLoading()
 			},
 			// 退出应用
@@ -262,14 +371,13 @@
 					this.$refs.drawer.close()
 					this.$refs.popupUpload.open()
 				}
-				console.log(status)
 			},
-			setBuckle() {
-				this.$refs.drawer.close();
-				uni.navigateTo({
-					url: `/pages/buckle/buckle?type=${this.blckle}`
-				})
-			},
+			// setBuckle() {
+			// 	this.$refs.drawer.close();
+			// 	uni.navigateTo({
+			// 		url: `/pages/buckle/buckle?type=${this.blckle}`
+			// 	})
+			// },
 			routerNotic(params) {
 				uni.navigateTo({
 					url: `/pages/noticList/index`
@@ -302,15 +410,37 @@
 </script>
 
 <style>
+	.hcItem{
+		padding: 5px 0;
+		margin: 0 8px;
+		border-style:solid;
+		border-color:#e8e8e8;
+		border-bottom-width:1rpx;
+	}
+	.fbxx{
+		flex-direction:row;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+	}
+	.nameBt{
+		font-size: 14px;
+		height: 16px;
+		line-height: 16px;
+	}
+	.detailItem{
+		font-size: 11px;
+		color: #9b9fa2;
+		height:16px;
+		line-height: 16px;
+	}
 	.jqList{
-		width: 210px;
+		width: 470rpx;
 		height: 300px;
 		background-color: rgba(255,255,255,0.9);
 		border-radius: 5px;
 		position: absolute;
 		top: 85px;
 		left: 125px;
-		overflow:hidden;
 		z-index:99;
 	}
 	.cjList{

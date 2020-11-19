@@ -23,10 +23,7 @@
 		data() {
 			return {
 				status: 0,
-				dataList: [
-					{bt:'消息标题',fbrxm:'张三',fbdwmc:'哈尔滨道外区公安分局',fbsj:'2020-11-10',isread:'0'},
-					{bt:'消息标题',fbrxm:'张三',fbdwmc:'哈尔滨道外区公安分局',fbsj:'2020-11-10',isread:'1'}
-				]
+				dataList: []
 			}
 		},
 		onShow() {

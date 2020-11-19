@@ -715,7 +715,8 @@
 					idCardImg: this.idCardImg,
 					licensePlateTypeCode: this.params == '人员' ? '' : this.array[this.index].code,
 					licensePlateType: this.params == '人员' ? '' : this.array[this.index].name,
-					personData: this.personData
+					personData: this.personData,
+					faceTest: this.params == '人员' ? this.faceTest : '',
 				};
 				var checkRes = graceChecker.check(formData, rule);
 				if (checkRes) {
