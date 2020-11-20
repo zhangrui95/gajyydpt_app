@@ -60,7 +60,6 @@
 	window.myGps = function(coord){
 		let coords = coord;
 		if(isLoad){
-			alert(coord);
 			addMySources(coords);
 		}
 	}
@@ -74,18 +73,23 @@
 		  	dwj = HGis.makeIcon(HMap, {iconUrl: './dwj.png'});
 		  	yfk = HGis.makeIcon(HMap, {iconUrl: './yfk.png'});
 			isLoad =  true;
+			window.getDh = function(data){
+				let list = data;
+				if(isLoad){
+					addLine(list);
+				}
+			}
 		    // 增加自定义数据源、自定义图层
-			if(getQueryString('isDtail')){
+			if(getQueryString('isDetail')){
 				let list = [{jd:getQueryString('jd'),wd:getQueryString('wd'),notice_status:getQueryString('type')}]
+				addJqSources(list);
+			}else if(getQueryString('isDh')){
+				addMySources([getQueryString('jd'),getQueryString('wd')]);
+				let list = [{jd:getQueryString('lng'),wd:getQueryString('lat'),notice_status:getQueryString('type')}]
 				addJqSources(list);
 			}else{
 				addMySources([getQueryString('jd'),getQueryString('wd')]);
 			}
-		  	// addDqsSources(dqs,'0');
-		  	// addDqsSources(dfk,'1');
-		  	// addDqsSources(ddc,'2');
-		  	// addDqsSources(dwj,'3');
-		  	// addDqsSources(yfk,'4');
 		  	HGis.bindMapClick(HMap, (point,coord,features)=>{
 				    let layer = features[0].properties.layer ? JSON.parse(features[0].properties.layer) : {};
 					let coordinates = features[0].geometry.coordinates;
@@ -165,7 +169,6 @@
 	}
 
 	function addMySources(coords) {
-		alert('经度：'+coords[0]+'，纬度：'+coords[1])
 		HGis.removeLayer(HMap,'myGps');
 		let markOptions = {
 					 id: 'myGps',
@@ -181,6 +184,24 @@
 					 textSize: 12,
 		}
 		HGis.addMarkLayer(HMap, myGps, markOptions);
+	}
+	function addLine(list){
+		let pointsList = list;
+		let poitnts = [];
+		pointsList.map(e => {
+			let latlon = e.turnlatlon.split(',');
+			poitnts.push([Number(latlon[0]),Number(latlon[1])]);
+		});
+		HGis.removeLayer(HMap, 'dhlx');
+		HGis.addPolylineLayer(HMap,{
+			id:'dhlx',
+			data:[{coordinate:poitnts}],
+			lineColor:'#23bd2a',
+			lineWidth:8,
+			lineOpacity:0.7,
+			lineCap:"round",
+			lineJoin:"round"
+		});
 	}
 	function addJqSources(list){
 		HGis.removeLayer(HMap, 'Sources0');
