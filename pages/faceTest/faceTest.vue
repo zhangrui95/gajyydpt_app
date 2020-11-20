@@ -22,7 +22,7 @@
 			<text class="bdText" v-if="data === 0 || data < 0">人像比对失败</text>
 			<text class="bdText" v-if="data && data < 60 && data > 0">相似度：{{data}}%，不通过</text>
 		</view>
-		<view class="bdJg"  v-if="data >= 60">
+		<view class="bdJg"  v-if="data&&data >= 60">
 			<image src="../../static/success.png" class="bdIcon"></image>
 			<text class="bdTextSuccess">相似度：{{data}}%，通过</text>
 		</view>
@@ -45,13 +45,23 @@
 				bdReturn:'',
 				idCardImg:'',
 				data:'',
+				isOk:true,
 			}
 		},
 		onShow() {
+			var _this = this;
+			var main = plus.android.runtimeMainActivity();
+			Helper.copyAssetsToDst(main);
+			this.myListenerSuc = plus.android.implements("com.hylink.wwpc.MyListener", {
+				onChange: function(event) {
+					//导入类  
+					plus.android.importClass(event);
+					 _this.isOk = event.getData() == '1' ? true : false;
+				}
+			}) 
 			this.myEventManager = plus.android.importClass("com.hylink.wwpc.MyEventManager");
 			this.eventManager = this.myEventManager.getMyEventManager();
 			//新建监听器
-			var _this = this
 			this.myListener = plus.android.implements("com.hylink.wwpc.MyListener", {
 				onChange: function(event) {
 					//导入类  
@@ -61,13 +71,6 @@
 					_this.bdReturn = _this.data && _this.data > 60 ? 'success' : 'fail';
 				}
 			});
-			this.myListenerSuc = plus.android.implements("com.hylink.wwpc.MyListener", {
-				onChange: function(event) {
-					//导入类  
-					plus.android.importClass(event);
-					console.log('isSuc获取返回数据：',event.getData());
-				}
-			}) 
 			this.eventManager.addListener("faceinfo", this.myListener);
 			this.eventManager.addListener("isSuc", this.myListenerSuc);
 			this.eventManager = null
@@ -81,7 +84,6 @@
 			this.eventManager.removeListener("isSuc");
 		},
 		onLoad:function(option){
-			Helper.copyAssetsToDst();
 			this.idCardImg = option.idCardImg;
 			console.log('idCardImg=====>',idCardImg)
 		},
@@ -105,6 +107,7 @@
 						if (res.confirm) {
 							that.imgData.splice(index, 1)
 							that.bdReturn = '';
+							that.data = '';
 						} else if (res.cancel) {}
 					}
 				});
@@ -126,7 +129,7 @@
 							let array = new Uint8Array(arrayBuffer);
 							var main = plus.android.runtimeMainActivity();
 							face.init();
-							face.base64Contrast(_this.idCardImg.split(',')[1],base64.split(',')[1]);
+							face.base64Contrast(_this.idCardImg.split(',')[1],base64.split(',')[1]);//_this.idCardImg.split(',')[1]
 							uni.hideLoading();
 						})
 						.catch(error => {
@@ -135,23 +138,30 @@
 			},
 			take_photo() {
 				var _this = this
-				_this.imgBack = '1'
-				uni.chooseImage({
-					count: 6, //默认9
-					sizeType: ['compressed'], //可以指定是原图还是压缩图，默认二者都有
-					sourceType: ['album', 'camera'], //从相册选择
-					success: function(res) {
-						uni.showLoading({
-						    title: '图片比对中'
-						});
-						let url =  res.tempFilePaths[0];
-						_this.imgData.push({
-							img: url
-						});
-						console.log('url====>',url);
-						_this.uploadData(url);
-					}
-				});
+				console.log('==========_this.isOk==========',_this.isOk)
+				if(_this.isOk){
+					uni.chooseImage({
+						count: 1, //默认9
+						sizeType: ['compressed'], //可以指定是原图还是压缩图，默认二者都有
+						sourceType: ['album', 'camera'], //从相册选择
+						success: function(res) {
+							uni.showLoading({
+							    title: '图片比对中'
+							});
+							let url =  res.tempFilePaths[0];
+							_this.imgData.push({
+								img: url
+							});
+							console.log('url====>',url);
+							_this.uploadData(url);
+						}
+					});
+				}else{
+					uni.showToast({
+						title: '人像比对安装包初始化失败',
+						icon: "none"
+					})
+				}
 			},
 		}
 	}
@@ -171,12 +181,14 @@
 	.bdTextSuccess{
 		color: #67c23a;
 		float: left;
-		margin:20px 12px;
+		margin:22px 0 0 8px;
+		font-size: 12px;
 	}
 	.bdText{
 		color: #f0441c;
 		float: left;
-		margin:20px 12px;
+		margin:22px 0 0 8px;
+		font-size: 12px;
 	}
 	.rxBox{
 		width: calc(100% - 32px);

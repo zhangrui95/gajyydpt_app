@@ -22,13 +22,17 @@
 				:title="params=='人员'?'姓名:'+item.data.name:item.data['idCard']" :status="item.checkException"
 				:avatar="item.data.idCardImg?item.data.idCardImg:params=='人员'?'../../static/people.png':'../../static/car.png'"
 				:note="params=='人员'?'<div>身份证号:'+item.data['idCard']+'</div><div>采集时间:'+item.createdAt+'</div>':'<div>人员数量:'+item.data['personData'].length+'</div><div>采集时间:'+item.createdAt+'</div>'">
-
+				<view class='rxbd' v-if="item.data['faceTest']"> 人像比对:<text :class="item.data['faceTest'] && item.data['faceTest'] == 'success' ? 'bdjg' : 'bdjgError'">{{item.data['faceTest'] && item.data['faceTest'] == 'success' ? '通过' : '失败'}}</text></view>
 				<view v-if="item.isUpload==0" class="chat-custom-right">
 					<uni-icons @click="uploadData(item,item.optargetId)" type="cloud-upload-filled" color="#FF6C00" size="26">
 					</uni-icons>
 				</view>
 			</uni-list-chat>
 		</uni-list>
+		<view class="noList" v-if="!dataList || dataList.length == 0">
+			<image class="noListImg" src="../../static/noList.png"></image>
+			<view class="noListText">暂无核查历史</view>
+		</view>
 		<!-- <uni-load-more :status="status" :icon-size="16" :content-text="contentText" /> -->
 		<uni-drawer mode="right" ref="drawerFilter">
 			<view style="padding:80rpx 20rpx 0 20rpx;" class="drawer_container">
@@ -346,6 +350,14 @@
 </script>
 
 <style lang="less" scoped>
+	.rxbd{
+		margin-left: 10px;
+		color: #999;
+		font-size: 12px;
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+	}
 	.view_header {
 		display: flex;
 		font-size: 10px;
@@ -373,7 +385,18 @@
 		background: #F4F4F4;
 		justify-content: start
 	}
-
+	.bdjg{
+		font-size: 12px;
+		color: #49c316;
+		height: 24px;
+		line-height: 24px;
+	}
+	.bdjgError{
+		font-size: 12px;
+		color: #EE0A24;
+		height: 24px;
+		line-height: 24px;
+	}
 	.sunui-radio-group,
 	.sunui-checkbox-group {
 		display: flex;
@@ -429,5 +452,15 @@
 		.drawer_btn {
 			padding: 0 56rpx
 		}
+	}
+	.noListImg{
+		width: 200px;
+		height: 123px;
+	}
+	.noList{
+		text-align: center;
+		font-size: 14px;
+		color: #999;
+		padding:50px 0;
 	}
 </style>

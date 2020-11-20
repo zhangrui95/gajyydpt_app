@@ -12,6 +12,10 @@
 			</view> -->
 			</uni-list-chat>
 		</uni-list>
+		<view class="noList" v-if="!dataList || dataList.length == 0">
+			<image class="noListImg" src="../../static/noList.png"></image>
+			<view class="noListText">暂无通知</view>
+		</view>
 	</view>
 </template>
 <script>
@@ -85,4 +89,14 @@
 	}
 </script>
 <style>
+	.noListImg{
+		width: 200px;
+		height: 123px;
+	}
+	.noList{
+		text-align: center;
+		font-size: 14px;
+		color: #999;
+		padding:50px 0;
+	}
 </style>

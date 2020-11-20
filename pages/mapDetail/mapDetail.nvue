@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<web-view v-if="detail && detail.lng && detail.lat" :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd+ '&type=' + type + '&isDtail=true'" :style="{width:'100%', height:'150px'}" @onPostMessage="message"></web-view>
+		<web-view v-if="detail && detail.lng && detail.lat" :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd+ '&type=' + type + '&isDetail=true'" :style="{width:'100%', height:'150px'}" @onPostMessage="message"></web-view>
 		<image class="sj" src="/static/sj.png"></image>
 		<view class="detailBox">
 			<view class="titleBox">
@@ -17,7 +17,7 @@
 				</view>
 				<view class="listItem">
 					<text class="listTitle">警情地点：{{detail.afdd}}</text>
-					<view class="dhbox" @click="getDh()">
+					<view class="dhbox" @click="getDh()" v-if="detail && detail.lng && detail.lat">
 						<uni-icons type="location-filled" color="#008fff" size="16"></uni-icons>
 						<text class="dhText">导航</text>
 					</view>
@@ -87,9 +87,9 @@
 						<uni-icons @click="uploadData(item,item.optargetId)" type="cloud-upload-filled" color="#FF6C00" size="22">
 						</uni-icons>
 					</view>
-					<view class="bdItem" v-if="item.dataType == 15">
+					<view class="bdItem" v-if="item.dataType == 15 && item.data['faceTest']">
 						<text class="detailItem">人像比对：</text>
-						<text :class="item.data['faceTest'] && item.data['faceTest'] == 'success' ? bdjg : bdjgError">{{item.data['faceTest'] && item.data['faceTest'] == 'success' ? '通过' : '失败'}}</text>
+						<text :class="item.data['faceTest'] && item.data['faceTest'] == 'success' ? 'bdjg' : 'bdjgError'">{{item.data['faceTest'] && item.data['faceTest'] == 'success' ? '通过' : '失败'}}</text>
 					</view>
 				</view>
 			</view>
@@ -128,21 +128,15 @@
 			}
 		},
 		onLoad:function(option){
-			console.log('option111',option.type);
 			this.jd = JSON.parse(option.coord)[0];
 			this.wd = JSON.parse(option.coord)[1];
-			console.log('option.coord====>',option.coord)
 			this.type = option.type;
-			// request('/jq/detailJq', {notice_category:option.category || '',notice_id:option.id}, "POST", "http://192.168.104.137:7702").then(res => {
-			// 	console.log('详情========>',res.result)
-			// 	this.detail = res.result;
-			// });
-			this.detail = {police_alarm_id:'A743856734678',notice_category:'1',afdd:'中源大道1993号',lng:126.5300002679,lat:45.8002383102}
+			this.detail = {}
 			this.selectList();
 		},
 		methods: {
 			message(evt) {
-			    console.log('接收到的消息：' + JSON.stringify(evt.detail.data[0].action));  
+			    console.log('接收到的消息：' + JSON.stringify(evt.detail));  
 			},
 			routerAdd(type) {
 				uni.navigateTo({
@@ -152,7 +146,7 @@
 			getDh(){
 				let _this = this;
 				uni.navigateTo({
-					url: `/pages/navigationGps/navigationGps?lng=${_this.detail.lng}&lat=${_this.detail.lat}`
+					url: `/pages/navigationGps/navigationGps?lng=${_this.detail.lng}&lat=${_this.detail.lat}&type=${_this.type}`
 				});
 			},
 			selectList(type) {

@@ -207,7 +207,8 @@
 				isNotic: '',
 				imgBack: '0',
 				faceTest:'',
-				jqId:''
+				jqId:'',
+				isHaveImg: false,
 			}
 		},
 		onShow() {
@@ -518,6 +519,7 @@
 						let value = JSON.parse(res.data.dataList[0].fieldValues[0].value)
 						if (this.IdentificationType == 'intelligent') {
 							this.tags = value.tags
+							this.isHaveImg = value.infos[0].XP ? true : false;
 							this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,' + value.infos[0].XP : this.params == '人员' ?
 								'../../static/people.png' : '../../static/car.png'
 							return
@@ -529,6 +531,7 @@
 							value.infos[0].CLPP1 : '')
 						this.nation = this.params == '人员' ? (value.infos[0].MZ ? value.infos[0].MZ : '') : (value.infos[
 							0].CLLX ? value.infos[0].CLLX : '')
+						this.isHaveImg = value.infos[0].XP ? true : false;
 						this.idCardImg = value.infos[0].XP ? 'data:image/jpg;base64,' + value.infos[0].XP : this.params == '人员' ?
 							'../../static/people.png' : '../../static/car.png'
 						this.time = SFZ.substring(6, 10) + "-" + SFZ.substring(10, 12) + "-" + SFZ.substring(12, 14)
@@ -755,9 +758,31 @@
 			// },
 			photoTest(){
 				console.log('比对')
-				uni.navigateTo({
-					url: '/pages/faceTest/faceTest?idCardImg='+this.idCardImg,
-				});
+				if(this.isHaveImg){
+					uni.navigateTo({
+						url: '/pages/faceTest/faceTest?idCardImg='+this.idCardImg,
+					});
+				}else{
+					let reg = this.params == '人员' ?
+						/^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/ :
+						/^(([\u4e00-\u9fa5]{1}[A-Z]{1})[-]?|([wW][Jj][\u4e00-\u9fa5]{1}[-]?)|([a-zA-Z]{2}))([A-Za-z0-9]{5}|[DdFf][A-HJ-NP-Za-hj-np-z0-9][0-9]{4}|[0-9]{5}[DdFf])$/
+					if(!this.idCard){
+						uni.showToast({
+							title: '请输入身份证号',
+							icon: "none"
+						})
+					}else if (!reg.test(this.idCard)) {
+						uni.showToast({
+							title: '请输入正确的身份证号',
+							icon: "none"
+						})
+					}else{
+						uni.showToast({
+							title: '未获取到身份证照片，无法比对',
+							icon: "none"
+						})
+					}
+				}
 			},
 			routerCheck() {
 				// if(this.idCard=='){}
@@ -915,6 +940,13 @@
 					color: #fff;
 					border-radius: 0;
 					padding: 0 60rpx;
+				}
+				.btnDisable{
+					background-color: #ddd;
+					color: #fdfdfd;
+					border-radius: 0;
+					padding: 0 60rpx;
+					border: 0;
 				}
 			}
 		}

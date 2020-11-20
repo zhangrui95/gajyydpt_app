@@ -261,14 +261,10 @@
 				this.$refs.webview.evalJs("jsfunction("+JSON.stringify(data)+")");
 			},
 			getDetail(item){
-				item.jd = 126.5390002679;
-				item.wd = 45.8052383102;
-				item.notice_status = '0';
 				let type = item.notice_status;
 				let id = item.notice_id;
 				let coord = JSON.stringify([item.jd,item.wd]);
 				let category = item.notice_category;
-				// console.log('警情id：',type,id);
 				uni.navigateTo({
 					url: `/pages/mapDetail/mapDetail?type=${type}&coord=${coord}&id=${id}&category=${category}`
 				})
@@ -302,7 +298,6 @@
 					request('/jq/getJqStatusList', condition, "POST", "http://192.168.104.137:7702").then(res => {
 						console.log('res.result',res.result)
 							this.jqList = res.result.list;
-							this.jqList = [{notice_category:'1',notice_id:'001'}];
 					});
 				}
 				this.type = type;
