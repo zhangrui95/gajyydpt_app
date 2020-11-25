@@ -4,9 +4,9 @@
 		<image class="sj" src="/static/sj.png"></image>
 		<view class="detailBox">
 			<view class="titleBox">
-				<text :class="type == 4 ? 'titleFk' : 'title'">{{detail.bt || ''}}</text>
-				<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')" v-if="type && type !='4'"></image>
-				<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"  v-if="type && type !='4'"></image>
+				<text :class="type == '05' ? 'titleFk' : 'title'">{{detail.bt || ''}}</text>
+				<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')" v-if="type && type !='05'"></image>
+				<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"  v-if="type && type !='05'"></image>
 			</view> 
 			<view class="listBox" v-if="detail.notice_category == '1'">
 				<view class="listItem">
@@ -30,7 +30,7 @@
 					<text class="listTitle">报警内容：{{detail.bjnr}}</text>
 				</view>
 				<view class="listItem listbottomBorder">
-					<text class="listTitle">警情类别：110报警</text>
+					<text class="listTitle">警情类别：{{detail.bjlbmc}}</text>
 				</view>
 			</view>
 			<view class="listBox" v-if="detail.notice_category == '2'">
@@ -55,14 +55,14 @@
 					<text class="listTitle">发布时间：{{detail.fbsj}}</text>
 				</view>
 			</view>
-			<view class="fkTitle" v-if="type=='3'"><text class="fknr">反馈内容</text><text class="bt"> (必填)</text></view>
-			<view  v-if="type=='3'">
+			<view class="fkTitle" v-if="type=='04'"><text class="fknr">反馈内容</text><text class="bt"> (必填)</text></view>
+			<view  v-if="type=='04'">
 				  <textarea class="textarea" v-model="real" placeholder='请输入反馈内容' placeholder-style="color:#ccc"/>
 			</view>
-			<view class="idcard_title"  v-if="type=='3'">
+			<view class="idcard_title"  v-if="type=='04'">
 				<text class="kssr">快速输入</text>
 			</view>
-			<view class="tagBox"v-if="type=='3'">
+			<view class="tagBox"v-if="type=='04'">
 				<text class="tag" @click="addReal('无效报警')">无效报警</text>
 				<text class="tag" @click="addReal('已转交其他部门')">已转交其他部门</text>
 				<text class="tag" @click="addReal('纠纷一协调完成')">纠纷一协调完成</text>
@@ -95,12 +95,12 @@
 			</view>
 		</view>
 		<view class="btnBox">
-			<button class="btnLeft" v-if="type=='0'" @click="updateStatus('1')"><text class="btnText">签收</text></button>
-			<button class="btnLeft" v-if="type=='1'" @click="updateStatus('2')"><text class="btnText">到场</text></button>
-			<button class="btnLeft" v-if="type=='2'" @click="updateStatus('3')"><text class="btnText">完结</text></button>
-			<button class="btnLeft" v-if="type=='3'" @click="updateStatus('4')"><text class="btnText">反馈</text></button>
-			<button class="btnLeft" v-if="type=='4'" @click="back"><text class="btnText">返回</text></button>
-			<button class="btnRight" v-if="type && type !='4'" @click="back"><text class="btnText">取消</text></button>
+			<button class="btnLeft" v-if="type=='01'" @click="updateStatus('02')"><text class="btnText">签收</text></button>
+			<button class="btnLeft" v-if="type=='02'" @click="updateStatus('03')"><text class="btnText">到场</text></button>
+			<button class="btnLeft" v-if="type=='03'" @click="updateStatus('04')"><text class="btnText">完结</text></button>
+			<button class="btnLeft" v-if="type=='04'" @click="updateStatus('05')"><text class="btnText">反馈</text></button>
+			<button class="btnLeft" v-if="type=='05'" @click="back"><text class="btnText">返回</text></button>
+			<button class="btnRight" v-if="type && type !='05'" @click="back"><text class="btnText">取消</text></button>
 		</view>
 	</view>
 </template>

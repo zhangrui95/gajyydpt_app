@@ -4,11 +4,11 @@
 		<image class="wdcj" src="/static/wdcj.png" @click="getshowCj"></image>
 		<image class="sj" src="/static/sj.png" v-if="showCj"></image>
 		<view class="cjList" v-if="showCj">
-			<text class="cjItem itemBorder" @click="getJqList('0')">待签收({{dqsNum}})</text>
-			<text class="cjItem itemBorder" @click="getJqList('1')" style="color: #05a2f6;">已签收({{yqsNum}})</text>
-			<text class="cjItem itemBorder" @click="getJqList('2')" style="color: #feaf57;">已到达({{yddNum}})</text>
-			<text class="cjItem itemBorder" @click="getJqList('3')" style="color: #1afa29;">已完结({{ywjNum}})</text>
-			<text class="cjItem" @click="getJqList('4')" style="color: #AAAAAA;">已反馈({{yfkNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('01')">待签收({{dqsNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('02')" style="color: #05a2f6;">已签收({{yqsNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('03')" style="color: #feaf57;">已到达({{yddNum}})</text>
+			<text class="cjItem itemBorder" @click="getJqList('04')" style="color: #1afa29;">已完结({{ywjNum}})</text>
+			<text class="cjItem" @click="getJqList('05')" style="color: #AAAAAA;">已反馈({{yfkNum}})</text>
 		</view>
 		<scroller class="jqList" v-if="showCj && showJq && jqList && jqList.length > 0">
 			<view class="hcItem" v-for="(item,index) in jqList" @click="getDetail(item)">
@@ -166,15 +166,15 @@
 			request('/jq/getJqStatusListCount', condition , "POST", "http://192.168.104.137:7702").then(res => {
 				console.log('res.result.list',res)
 					res.result.list.map((item)=>{
-						if(item.notice_status === '0'){
+						if(item.notice_status === '01'){
 							 _this.dqsNum = item.count;
-						}else if(item.notice_status === '1'){
+						}else if(item.notice_status === '02'){
 							 _this.yqsNum = item.count;
-						}else if(item.notice_status === '2'){
+						}else if(item.notice_status === '03'){
 							 _this.yddNum = item.count;
-						}else if(item.notice_status === '3'){
+						}else if(item.notice_status === '04'){
 							 _this.ywjNum = item.count;
-						}else if(item.notice_status === '4'){
+						}else if(item.notice_status === '05'){
 							 _this.yfkNum = item.count;
 						}
 					});
