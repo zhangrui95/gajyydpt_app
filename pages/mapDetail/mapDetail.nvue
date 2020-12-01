@@ -8,7 +8,7 @@
 				<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')" v-if="type && type !='05'"></image>
 				<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"  v-if="type && type !='05'"></image>
 			</view> 
-			<view class="listBox" v-if="detail.notice_category == '1'">
+			<view class="listBox" v-if="!detail.notice_category || detail.notice_category == '1'">
 				<view class="listItem">
 					<text class="listTitle">警情编号：{{detail.police_alarm_id}}</text>
 				</view>
@@ -30,7 +30,10 @@
 					<text class="listTitle">报警内容：{{detail.bjnr}}</text>
 				</view>
 				<view class="listItem listbottomBorder">
-					<text class="listTitle">警情类别：{{detail.bjlbmc}}</text>
+					<picker @columnchange="columnchange" @change="getChoice" mode="multiSelector" :value="value" :range="array" v-if="type=='04'">
+						<text class="listTitle">警情类别：{{jqlbMc ? jqlbMc : detail.bjlbmc}}</text> 
+					</picker>
+					<text class="listTitle" v-if="type!='04'">警情类别：{{detail.bjlbmc}}</text>
 				</view>
 			</view>
 			<view class="listBox" v-if="detail.notice_category == '2'">
@@ -123,8 +126,16 @@
 				wd:'',
 				real: '',
 				type:"",
-				dataList:[],
-				detail:{}
+				dataList:[], 
+				detail:{},
+				array: [[],[],[]], 
+				treeList:[],
+				idx0:0,
+				idx1:0,
+				idx2:0,
+				value:[],
+				jqlbMc:'',
+				JqlbBm:'',
 			}
 		},
 		onLoad:function(option){
@@ -133,8 +144,86 @@
 			this.type = option.type;
 			this.detail = {}
 			this.selectList();
+			this.getArray();
 		},
 		methods: {
+			getArray(){
+				request('/dict/findDictTreeTY', {
+					sscj:'1',
+					ssds:'hlj'
+				}, "POST", "http://192.168.104.137:7702").then(res => { 
+					console.log('res=================>',res); 
+					this.treeList = res.data.list;
+					let array0 = []; 
+					let array1 = []; 
+					let array2 = []; 
+					res.data.list.map((item)=>{ 
+						array0.push(item.label);
+					});
+					res.data.list[0].children.map((event)=>{
+						array1.push(event.label);
+					});
+					res.data.list[0].children[0].children.map((event)=>{
+						array2.push(event.label);
+					});
+					this.array.splice(0, 1, array0);
+					this.array.splice(1, 1, array1);
+					this.array.splice(2, 1, array2);
+				});
+			},
+			getChoice(){
+				this.value = [this.idx0,this.idx1,this.idx2]; 
+				this.jqlbMc = this.idx2 || this.idx2 === 0 ? this.treeList[this.idx0].children[this.idx1].children[this.idx2].label : this.idx1 || this.idx1 === 0 ? this.treeList[this.idx0].children[this.idx1].label : this.treeList[this.idx0].label;
+				this.JqlbBm = this.idx2 || this.idx2 === 0 ? this.treeList[this.idx0].children[this.idx1].children[this.idx2].value : this.idx1 || this.idx1 === 0 ? this.treeList[this.idx0].children[this.idx1].value : this.treeList[this.idx0].value;
+			},
+			columnchange(e){
+				let column = e.detail.column;
+				let idx = e.detail.value;
+				let array1 = []; 
+				let array2 = []; 
+				if(column === 0){
+					this.idx0 = idx;
+					this.idx1 = 0;
+					this.idx2 = 0; 
+					this.value = [idx,this.idx1,this.idx2];
+					if(this.treeList[idx].children && this.treeList[idx].children.length > 0){
+						this.treeList[idx].children.map((event)=>{
+							array1.push(event.label);
+						});
+						if(this.treeList[idx].children[0].children && this.treeList[idx].children[0].children.length > 0){
+							this.treeList[idx].children[0].children.map((event)=>{
+								array2.push(event.label);
+							});
+						}else{
+							array2 = [];
+							this.idx2 = '';
+						} 
+					}else{
+						array1 = [];
+						array2 = [];
+						this.idx1 = '';
+						this.idx2 = '';
+					}
+					this.array.splice(1, 1, array1);
+					this.array.splice(2, 1, array2); 
+				}else if(column === 1){
+					this.idx1 = idx;
+					this.idx2 = 0;
+					this.value = [this.idx0,idx,this.idx2];
+					if(this.treeList[this.idx0].children[idx].children && this.treeList[this.idx0].children[idx].children.length > 0){
+						this.treeList[this.idx0].children[idx].children.map((event)=>{
+							array2.push(event.label);
+						});
+					}else{
+						array2 = []; 
+						this.idx2 = '';
+					}
+					this.array.splice(2, 1, array2); 
+				}else{
+					this.value = [this.idx0,this.idx1, idx];
+					this.idx2 = idx;
+				}
+			},
 			message(evt) {
 			    console.log('接收到的消息：' + JSON.stringify(evt.detail));  
 			},
@@ -179,7 +268,9 @@
 				let kfPd = {
 					feedback: this.real,
 					notice_category,
-					notice_id:this.detail.notice_id
+					notice_id:this.detail.notice_id,
+					bjlbmc:this.jqlbMc || '',
+					bjlbdm:this.JqlbBm || '',
 				};
 				if(notice_category == "1"){
 					condition.police_alarm_id = this.detail.police_alarm_id;
@@ -192,7 +283,7 @@
 				if(notice_category == "3"){
 					condition.notice_id = this.detail.notice_id;
 				}
-				if(status == '4'){ 
+				if(status == '05'){ 
 					request('/jq/feedBack', kfPd, "POST", "http://192.168.104.137:7702").then(res => {
 						console.log('反馈了========>',res)
 						request('/jq/updataAppstatus', condition, "POST", "http://192.168.104.137:7702").then(res => {
