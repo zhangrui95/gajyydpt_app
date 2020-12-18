@@ -1,45 +1,51 @@
 <template>
 	<view :style="{width:'100%', height:height+ 'px'}" ref="map" id="map">
-		<web-view :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd"  @pagestart="onPageStart"  ref="webview" :style="{width:'100%', height:height+ 'px'}" @onPostMessage="message"></web-view>
-		<image class="wdcj" src="/static/wdcj.png" @click="getshowCj"></image>
-		<image class="sj" src="/static/sj.png" v-if="showCj"></image>
-		<view class="cjList" v-if="showCj">
-			<text class="cjItem itemBorder" @click="getJqList('01')">待签收({{dqsNum}})</text>
-			<text class="cjItem itemBorder" @click="getJqList('02')" style="color: #05a2f6;">已签收({{yqsNum}})</text>
-			<text class="cjItem itemBorder" @click="getJqList('03')" style="color: #feaf57;">已到达({{yddNum}})</text>
-			<text class="cjItem itemBorder" @click="getJqList('04')" style="color: #1afa29;">已完结({{ywjNum}})</text>
-			<text class="cjItem" @click="getJqList('05')" style="color: #AAAAAA;">已反馈({{yfkNum}})</text>
-		</view>
-		<scroller class="jqList" v-if="showCj && showJq && jqList && jqList.length > 0">
-			<view class="hcItem" v-for="(item,index) in jqList" @click="getDetail(item)">
-				<text class="nameBt">{{item.bt}}</text>
-				<text class="detailItem">发布时间：{{item.fbsj}}</text>
-				<text class="detailItem">发布单位：{{item.fbdwmc}}</text>
-				<text class="detailItem">发布人员：{{item.fbrxm}}</text>	
+		<block v-if="isNotic=='222'">
+			<uni-notice-bar @click.native="routerNotic('notic')" showIcon="true" scrollable="true" text="您有新的通知,请及时处理">
+			</uni-notice-bar>
+		</block>
+		<view class="viewBox" :style="{top:isNotic=='222' ? '-10px' : '0'}">
+			<web-view :src="'/hybrid/html/map.html?jd=' + jd + '&wd=' + wd"  @pagestart="onPageStart"  ref="webview" :style="{width:'100%', height:height+ 'px'}" @onPostMessage="message"></web-view>
+			<image class="wdcj" src="/static/wdcj.png" @click="getshowCj"></image> 
+			<image class="sj" src="/static/sj.png" v-if="showCj"></image>
+			<view class="cjList" v-if="showCj">
+				<text class="cjItem itemBorder" @click="getJqList('01')">待签收({{dqsNum}})</text>
+				<text class="cjItem itemBorder" @click="getJqList('02')" style="color: #05a2f6;">已签收({{yqsNum}})</text>
+				<text class="cjItem itemBorder" @click="getJqList('03')" style="color: #feaf57;">已到达({{yddNum}})</text>
+				<text class="cjItem itemBorder" @click="getJqList('04')" style="color: #1afa29;">已完结({{ywjNum}})</text>
+				<text class="cjItem" @click="getJqList('05')" style="color: #AAAAAA;">已反馈({{yfkNum}})</text>
 			</view>
-		</scroller>
-		<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')"></image>
-		<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"></image>
-		<view class="bottomBox">
-			<view class="itemType">
-				<image src="/static/dqs.png" class="iconLeft"></image>
-				<text class="itemName">待签收</text>
-			</view>
-			<view class="itemType">
-				<image src="/static/dfk.png" class="iconLeft"></image>
-				<text class="itemName">已签收</text>
-			</view>
-			<view class="itemType">
-				<image src="/static/ddc.png" class="iconLeft"></image>
-				<text class="itemName">已到达</text>
-			</view>
-			<view class="itemType">
-				<image src="/static/dwj.png" class="iconLeft"></image>
-				<text class="itemName">已完结</text>
-			</view>
-			<view class="itemType">
-				<image src="/static/yfk.png" class="iconLeft"></image>
-				<text class="itemName">已反馈</text>
+			<scroller class="jqList" v-if="showCj && showJq && jqList && jqList.length > 0">
+				<view class="hcItem" v-for="(item,index) in jqList" @click="getDetail(item)">
+					<text class="nameBt">{{item.bt}}</text>
+					<text class="detailItem">发布时间：{{item.fbsj}}</text>
+					<text class="detailItem">发布单位：{{item.fbdwmc}}</text>
+					<text class="detailItem">发布人员：{{item.fbrxm}}</text>	
+				</view>
+			</scroller>
+			<image class="btnPerson" src="/static/ryhc.png" @click="routerAdd('人员')"></image>
+			<image class="btnCar" src="/static/clhc.png" @click="routerAdd('车辆')"></image>
+			<view class="bottomBox">
+				<view class="itemType">
+					<image src="/static/dqs.png" class="iconLeft"></image>
+					<text class="itemName">待签收</text>
+				</view>
+				<view class="itemType">
+					<image src="/static/dfk.png" class="iconLeft"></image>
+					<text class="itemName">已签收</text>
+				</view>
+				<view class="itemType">
+					<image src="/static/ddc.png" class="iconLeft"></image>
+					<text class="itemName">已到达</text>
+				</view>
+				<view class="itemType">
+					<image src="/static/dwj.png" class="iconLeft"></image>
+					<text class="itemName">已完结</text>
+				</view>
+				<view class="itemType">
+					<image src="/static/yfk.png" class="iconLeft"></image>
+					<text class="itemName">已反馈</text>
+				</view>
 			</view>
 		</view>
 		<!-- 抽屉 -->
@@ -163,8 +169,10 @@
 				startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
 				endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
 			};
-			request('/jq/getJqStatusListCount', condition , "POST", "http://192.168.104.137:7702").then(res => {
-				console.log('res.result.list',res)
+			console.log('===========调用/jq/getJqStatusListCount===========')
+			request('/jq/getJqStatusListCount', condition , "POST", uni.getStorageSync('ip')).then(res => {
+			// request('/jq/getJqStatusListCount', searchInterface(condition, false,'1111-1111-1111-1111') , "POST", "htdz").then(res => {
+				console.log('进入页面类型数量res.result.list========>',res);
 					res.result.list.map((item)=>{
 						if(item.notice_status === '01'){
 							 _this.dqsNum = item.count;
@@ -192,17 +200,8 @@
 			// 	}
 			// });
 			// this.blckle = option.type;
-			uni.getLocation({
-			    type: 'wgs84',
-			    success: function (res) {//[126.5300002679,45.8002383102]
-					_this.jd = res.longitude ? res.longitude : 126.5300002679; 
-					_this.wd = res.latitude ? res.latitude : 45.8002383102;
-			    },
-				fail:function(){
-					_this.jd = 126.5300002679;
-					_this.wd = 45.8002383102;
-				}
-			});
+			_this.jd = uni.getStorageSync('longitude') ? uni.getStorageSync('longitude') : 126.5300002679;
+			_this.wd = uni.getStorageSync('latitude') ? uni.getStorageSync('latitude') : 45.8002383102;
 			this.getMyGps();
 			this.getAllJq();
 			this.getJwt(); 
@@ -214,23 +213,21 @@
 		},
 		methods: {
 			getMyGps(){
+				let longitude = uni.getStorageSync('longitude')
+				let latitude = uni.getStorageSync('latitude')
 				let _this = this;
-				uni.getLocation({
-				    type: 'wgs84',
-				    success: function (res) {
-						let condition = {
-							gps_time:moment().format('YYYY-MM-DD HH:mm:ss'),
-							imei:uni.getStorageSync('imei'),
-							x: res.longitude.toString(),
-							y: res.latitude.toString()
-						}
-						if(!_this.PageStart) {
-							return false;
-						}
-						_this.$refs.webview.evalJs("myGps("+JSON.stringify([res.longitude,res.latitude])+")");
-						request('/jwtGps/insertJwtGps', condition, "POST", "http://192.168.104.137:7702").then(res => {});
-				    }
-				});
+				let condition = {
+					gps_time:moment().format('YYYY-MM-DD HH:mm:ss'),
+					imei:uni.getStorageSync('imei'),
+					x: longitude.toString(),
+					y: latitude.toString() 
+				}
+				if(!_this.PageStart) {
+					return false;
+				}
+				_this.$refs.webview.evalJs("myGps("+JSON.stringify([longitude,latitude])+")");
+				request('/jwtGps/insertJwtGps', condition , "POST", uni.getStorageSync('ip')).then(res => {});
+				// request('/jwtGps/insertJwtGps', searchInterface(condition, false,'2222-2222-2222-2222') , "POST", "htdz").then(res => {});
 			},
 			getAllJq(){
 				let condition = {
@@ -238,7 +235,8 @@
 					startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
 					endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
 				};
-				request('/jq/getJqStatusList', condition, "POST", "http://192.168.104.137:7702").then(res => {
+				request('/jq/getJqStatusList', condition , "POST", uni.getStorageSync('ip')).then(res => {
+				// request('/jq/getJqStatusList', searchInterface(condition, false,'3333-3333-3333-3333') , "POST", "htdz").then(res => {
 						if(!this.PageStart) {
 							return false;
 						}
@@ -246,7 +244,8 @@
 				});
 			},
 			getJwt(){
-				request('/jwtGps/getJwtGps', {type:'警务通'}, "POST", "http://192.168.104.137:7702").then(res => {
+				request('/jwtGps/getJwtGps', {type:'警务通'} , "POST", uni.getStorageSync('ip')).then(res => {
+				// request('/jwtGps/getJwtGps', searchInterface({type:'警务通'}, false,'4444-4444-4444-4444') , "POST", "htdz").then(res => {
 					this.sendMessageToWebview(res.result.list);
 				});
 			},
@@ -295,9 +294,10 @@
 					this.showJq = !this.showJq;
 				}else{
 					this.showJq = true;
-					request('/jq/getJqStatusList', condition, "POST", "http://192.168.104.137:7702").then(res => {
+					request('/jq/getJqStatusList', condition , "POST", uni.getStorageSync('ip')).then(res => {
+						// request('/jq/getJqStatusList', searchInterface(condition, false,'3333-3333-3333-3333') , "POST", "htdz").then(res => {
 						console.log('res.result',res.result)
-							this.jqList = res.result.list;
+						this.jqList = res.result.list;
 					});
 				}
 				this.type = type;
@@ -318,7 +318,7 @@
 				})
 			},
 			dialogUpload(done) {
-				this.$request('/Update/api/upgrade/downloadApk.do', {
+				request('/Update/api/upgrade/downloadApk.do', {
 					fileId: this.updateId,
 				}, "POST", "htdz").then(res => {
 					// 打印调用成功回调
@@ -414,6 +414,9 @@
 </script>
 
 <style>
+	.viewBox{
+		position: relative;
+	}
 	.hcItem{
 		padding: 5px 0;
 		margin: 0 8px;

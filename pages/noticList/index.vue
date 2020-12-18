@@ -12,10 +12,6 @@
 			</view> -->
 			</uni-list-chat>
 		</uni-list>
-		<view class="noList" v-if="!dataList || dataList.length == 0">
-			<image class="noListImg" src="../../static/noList.png"></image>
-			<view class="noListText">暂无通知</view>
-		</view>
 	</view>
 </template>
 <script>
@@ -50,15 +46,15 @@
 				}
 				]
 			}
-			// uni.showLoading({
-			// 				title: '正在加载...',
-			// 				mask: true
-			// 			})
+			uni.showLoading({
+							title: '正在加载...',
+							mask: true
+						})
 			this.$request('/notice/getNewPoliceNoticeList', searchInterface(condition, false,
 				'230000000000-3-0100-56d51bb0e53749b983791e19b10534f8','data'), "POST", "htdz").then(res => {
-					console.log(res) 
-					// this.dataList = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.list
-					// console.log(this.dataList)
+					console.log(res)
+					this.dataList = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.list
+					console.log(this.dataList)
 					// 打印调用成功回调
 				})
 			// uni.request({
@@ -89,14 +85,4 @@
 	}
 </script>
 <style>
-	.noListImg{
-		width: 200px;
-		height: 123px;
-	}
-	.noList{
-		text-align: center;
-		font-size: 14px;
-		color: #999;
-		padding:50px 0;
-	}
 </style>

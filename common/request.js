@@ -62,8 +62,41 @@ const request = (url = '', data = {}, type = 'GET', urlType = '', upLoadType = '
 						requestUrl = resourceList.find((item) => item.resourceId ==
 							'230000000000-3-0100-dea86786075d41c796859bbabb5f4d78').resourceAddress
 						break;
+					// case '/jq/getJqStatusListCount':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'1111-1111-1111-1111').resourceAddress
+					// 	break;
+					// case '/jwtGps/insertJwtGps':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'2222-2222-2222-2222').resourceAddress
+					// 	break;
+					// case '/jq/getJqStatusList':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'3333-3333-3333-3333').resourceAddress
+					// 	break;
+					// case '/jwtGps/getJwtGps':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'4444-4444-4444-4444').resourceAddress
+					// 	break;
+					// case '/dict/findDictTreeTY':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'5555-5555-5555-5555').resourceAddress
+					// 	break;
+					// case '/jq/feedBack':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'6666-6666-6666-6666').resourceAddress
+					// 	break;
+					// case '/jq/updataAppstatus':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'7777-7777-7777-7777').resourceAddress
+					// 	break;
+					// case '/jq/routeNavigation':
+					// 	requestUrl = resourceList.find((item) => item.resourceId ==
+					// 		'8888-8888-8888-8888').resourceAddress
+					// 	break;
 					default:
 						requestUrl = urlType + url;
+						console.log('执行requestUrl=========>',requestUrl)
 						break;
 				}
 				if (res.networkType != 'none') {

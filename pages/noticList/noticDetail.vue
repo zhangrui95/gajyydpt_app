@@ -30,21 +30,30 @@
 				<view class="">
 					{{detailInfo.nr}}
 				</view>
+				<view class="content_box">
+					<view class="content_img" v-for="(item,index) in detailInfo.base64img" :key="index">
+						<!-- <view>{{item[index]}}</view> -->
+						<image @click="preview(item)" style="width:100%; height:100% " :src="item.replace(/[\r\n]/g,'')"
+						 mode="">
+						</image>
+						<!-- <uni-icons @click="deletePhoto(index)" class="delete_icon" type="clear" color="red" size="16"></uni-icons> -->
+					</view>
+				</view>
 			</view>
 		</view>
 	</view>
 </template>
-
 <script>
 	import {
 		searchInterface
 	} from '../../utils';
+	import {
+			base64ToPath
+		} from 'image-tools'
 	export default {
 		data() {
 			return {
-				detailInfo: {
-					bt:'消息标题',fbrxm:'张三',fbdwmc:'哈尔滨道外区公安分局',fbsj:'2020-11-10'
-				}
+				detailInfo: {}
 			}
 		},
 		onShow() {
@@ -66,14 +75,15 @@
 				]
 			}
 			uni.showLoading({
-							title: '正在加载...',
-							mask: true
-						})
+				title: '正在加载...',
+				mask: true
+			})
 			this.$request('/jq/getJqTztgDetail', searchInterface(condition, false,
-				'230000000000-3-0100-1099d6f4305f4c0da0986f67b7d8767d','data'), "POST", "htdz").then(res => {
+				'230000000000-3-0100-1099d6f4305f4c0da0986f67b7d8767d', 'data'), "POST", "htdz").then(res => {
 				// 打印调用成功回调
 				uni.$emit('isRead', '111');
 				this.detailInfo = JSON.parse(res.data.dataList[0].fieldValues[0].value).result.data
+				// console.log(detailInfo.base64img[0])
 			})
 			// uni.request({
 			// 	method: 'post',
@@ -93,16 +103,28 @@
 			// })
 		},
 		methods: {
-
+			// 预览
+			preview(img) {
+				let itemImg = img.replace(/[\r\n]/g,'')
+				// uni-app不能直接预览base64
+				base64ToPath(itemImg).then(path=>{
+					console.log(path)
+					uni.previewImage({
+						urls: [path],
+						longPressActions: {
+							success: function(data) {},
+							fail: function(err) {}
+						}
+					});
+				})
+			},
 		}
 	}
 </script>
-
 <style scoped>
 	page {
 		background-color: #F8F8F8;
 	}
-
 	.buckle_title {
 		color: #3EBFDF;
 		font-size: 28rpx;
@@ -111,7 +133,6 @@
 		background: #F8F8F8;
 		padding-left: 20rpx;
 	}
-
 	.buckle {
 		display: flex;
 		justify-content: space-between;
@@ -123,11 +144,29 @@
 		background-color: #FFFFFF;
 		border-bottom: 1px solid #EDEDED;
 	}
-
 	.buckleDetail {
 		padding: 10rpx 10rpx 10rpx 20rpx;
 		background-color: #FFFFFF;
 		color: #1A1F25;
 		font-size: 28rpx;
+	}
+	.content_box {
+		display: flex;
+		overflow: scroll;
+	}
+	.content_img {
+		height: 200rpx;
+		width: 160rpx;
+		display: flex;
+		flex: 0 0 80px;
+		justify-content: center;
+		align-items: center;
+		background-color: #f6f6f6;
+		margin-right: 40rpx;
+		position: relative;
+		.image {
+			height: 68rpx;
+			width: 68rpx;
+		}
 	}
 </style>

@@ -15,6 +15,7 @@
 	} from 'image-tools'
 	export default {
 		onLaunch: function() {
+			uni.setStorageSync('ip', "http://35.19.4.61:7727");
 			plus.device.getInfo({
 				success: (e) => {
 					uni.setStorageSync('imei', e.imei)

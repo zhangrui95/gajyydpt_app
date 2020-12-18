@@ -3,7 +3,7 @@
 		<view class="index_header">
 			<view class="header_title_block">
 				<view class="wenzi">
-					维稳盘查
+					合成作战
 				</view>
 			</view>
 			<view class="touxiang" @click="handleClick">

@@ -28,30 +28,20 @@
 			this.lng = option.lng;
 			this.lat = option.lat;
 			this.type = option.type;
-			uni.getLocation({
-			    type: 'wgs84',
-			    success: function (res) {//[126.5300002679,45.8002383102]
-					_this.jd = res.longitude ? res.longitude : 126.5300002679;
-					_this.wd = res.latitude ? res.latitude : 45.8002383102;
-					let condition = {
-						fromLat:_this.wd.toString(),
-						fromLon:_this.jd.toString(),
-						toLat:_this.lat.toString(),
-						toLon:_this.lng.toString()
-					};
-					request('/jq/routeNavigation', condition , "POST", "http://192.168.104.137:7702").then(res => {
-						setTimeout(()=>{
-							if(!_this.PageStart) {
-								return false;
-							}
-							_this.$refs.webview.evalJs("getDh("+JSON.stringify(res.result.navigation.data.rows[0].item)+")");
-						},10000)
-					});
-			    },
-				fail:function(){
-					_this.jd = 126.5300002679;
-					_this.wd = 45.8002383102;
+			_this.jd = uni.getStorageSync('longitude') ? uni.getStorageSync('longitude') : 126.5300002679;
+			_this.wd = uni.getStorageSync('latitude') ? uni.getStorageSync('latitude') : 45.8002383102;
+			let condition = {
+				fromLat:_this.wd.toString(),
+				fromLon:_this.jd.toString(),
+				toLat:_this.lat.toString(),
+				toLon:_this.lng.toString()
+			};
+			request('/jq/routeNavigation', condition , "POST", uni.getStorageSync('ip')).then(res => {
+			// request('/jq/routeNavigation', searchInterface(condition, false,'8888-8888-8888-8888') , "POST", "htdz").then(res => {
+				if(!_this.PageStart) {
+					return false;
 				}
+				_this.$refs.webview.evalJs("getDh("+JSON.stringify(res.result.navigation.data.rows[0].item)+")");
 			});
 		},
 		methods: {

@@ -76,16 +76,16 @@
 					console.error('地图初始化失败，未检测到leaflet!')
 				}
 			} else if (mapType == 'minemap') {
-				console.log('window.minemap',window.minemap)
+				console.log('window.minemap==============>',window.minemap);
 				if (window.minemap) {
+					console.log('options.minemapOption==============>',options.minemapOption);
 					if (options.minemapOption) {
 						minemap.domainUrl = options.minemapOption.domainUrl;
 						minemap.dataDomainUrl = options.minemapOption.dataDomainUrl;
-						minemap.spriteUrl = options.minemapOption.spriteUrl;
+						// minemap.spriteUrl = options.minemapOption.spriteUrl;
 						minemap.serviceUrl = options.minemapOption.serviceUrl;
 						minemap.appKey = options.minemapOption.appKey;
 						minemap.solution = options.minemapOption.solution;
-
 						var map = new minemap.Map({
 							container: mapId,
 							style: options.minemapOption.style, /* 底图样式 */
@@ -96,6 +96,7 @@
 							minZoom: options.minZoom || 3,  /* 地图最小缩放等级 */
 							logoControl: false,
 						});
+						console.log('map=================>',map);
 						HMap.map = map;
 					}
 				} else {

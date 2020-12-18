@@ -5,7 +5,7 @@
 				<image src="../../static/jh.png" mode="widthFix" class="title_img"></image>
 			</view>
 			<view class="text_container">
-				<text>维稳盘查</text>
+				<text>合成作战</text>
 			</view>
 			<view class="setting" v-if="setting" @click="updateSetting">
 				<image class="image" src="../../static/setting.png"></image>
@@ -142,7 +142,7 @@
 										writer.write(JSON.stringify({
 											sid: 'c5516ec3-5965-4803-874c-799239049cdb',
 											aqzx: `http://192.168.3.51:8100`, // 安全中心地址
-											hddz: `http://${that.address}:${that.port}`, // 维稳盘查
+											hddz: `http://${that.address}:${that.port}`, // 合成作战
 											middle: `http://192.168.104.245:7005`
 										}));
 									})

@@ -26,7 +26,7 @@
 						<view class="uni-list-chat__content-title uni-ellipsis">
 							<block v-if="type=='notic'">
 								<view class="example-body">
-									{{title}}
+									<view class="topTitle">{{title}}</view>
 									<view class="tag-view">
 										<uni-tag size="small" :text="isRead=='0'?'未确认':'已确认'" :type="isRead=='0'?'error':'success'" />
 									</view>
@@ -566,9 +566,16 @@
 	}
 
 	.uni-tag {
-		padding: 0 10rpx;
-		height: 44rpx;
-		line-height: 44rpx;
-		margin-left: 10rpx;
+		padding: 0 5rpx;
+		height: 30rpx;
+		line-height: 30rpx;
+		margin-left: 5rpx;
+		font-size: 10px!important;
+	}
+	.topTitle{
+		width: 80%;
+		overflow: hidden;
+		text-overflow:ellipsis;
+		white-space: nowrap;
 	}
 </style>

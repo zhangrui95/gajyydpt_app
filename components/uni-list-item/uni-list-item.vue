@@ -324,14 +324,12 @@ $list-item-pd: $uni-spacing-col-lg $uni-spacing-row-lg;
 }
 
 .uni-list-item__extra {
-	// width: 25%;
 	/* #ifndef APP-NVUE */
 	display: flex;
 	/* #endif */
 	flex-direction: row;
 	justify-content: flex-end;
 	align-items: center;
-	width: 82px;
 }
 
 .uni-list-item__header {

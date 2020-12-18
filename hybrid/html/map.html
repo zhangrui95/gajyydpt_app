@@ -28,13 +28,13 @@
 	let isLoad =  false;
 	let mapOptions = {
         minemapOption:{
-            domainUrl: "http://minedata.cn",
-            dataDomainUrl: "http://datahive.minedata.cn",
-            spriteUrl: "http://minedata.cn/minemapapi/v2.1.0/sprite/sprite",
-            serviceUrl: "http://mineservice.minedata.cn/service/",
-            appKey: "634c6094eff844f39a54b2a87c133e34",
-            solution: 13999,
-            style: "http://mineservice.minedata.cn/service/solu/style/id/13999",/* 底图样式 */
+			domainUrl: "http://127.0.0.1:21009", /* MineMap根域名地址 */
+			dataDomainUrl: "http://127.0.0.1:21009",/* MineMap矢量数据服务根域名地址 */
+			spriteUrl: "http://127.0.0.1:21009/minemapapi/v2.1.0/sprite/sprite",/* MineMap底图雪碧图地址 */
+			serviceUrl: "http://127.0.0.1:21009/service/",/* MineMap后台服务根地址 */
+			appKey: "a839dd7409a24d668502b64498f908a5",/* MineMap key */
+			solution: 12650,
+			style: "http://127.0.0.1:21009/service/solu/style/id/12650", /* 底图样式 */
         },
         center: [getQueryString('jd'),getQueryString('wd')], // 地图中心//[126.5300002679,45.8002383102]
         zoom: 15, //缩放比列
