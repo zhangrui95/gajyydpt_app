@@ -252,7 +252,7 @@
 						},
 					});
 				}
-				console.log('MyGsp============>',longitude,,latitude)
+				console.log('MyGsp============>',longitude,latitude)
 				let _this = this;
 				let condition = {
 					gps_time:moment().format('YYYY-MM-DD HH:mm:ss'),
