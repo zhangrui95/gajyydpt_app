@@ -15,7 +15,8 @@
 	} from 'image-tools'
 	export default {
 		onLaunch: function() {
-			uni.setStorageSync('ip', "http://35.19.4.61:7727");
+			uni.setStorageSync('ip', "http://10.113.129.226:7702");
+			this.upLoadGps();
 			plus.device.getInfo({
 				success: (e) => {
 					uni.setStorageSync('imei', e.imei)
@@ -135,11 +136,11 @@
 					type: 'wgs84',
 					altitude: true,
 					success: function(res) {
-						console.log(JSON.stringify(res))
-						console.log('当前位置的经度：' + res.longitude);
-						console.log('当前位置的纬度：' + res.latitude);
-						console.log('当前位置的速度：' + res.speed);
-						console.log('当前位置的高度：' + res.altitude);
+						// console.log(JSON.stringify(res))
+						// console.log('当前位置的经度：' + res.longitude);
+						// console.log('当前位置的纬度：' + res.latitude);
+						// console.log('当前位置的速度：' + res.speed);
+						// console.log('当前位置的高度：' + res.altitude);
 						uni.setStorageSync('longitude', res.longitude)
 						uni.setStorageSync('latitude', res.latitude)
 						let params = {

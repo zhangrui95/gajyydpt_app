@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
-    <title>维稳核查</title>
+    <title>合成作战</title>
     <link rel="stylesheet" href="./minemap.css">
 	<script type="text/javascript" src="./uni.webview.1.5.2.js"></script>
     <script src="./minemap.js"></script>
@@ -26,6 +26,7 @@
 	let personGps,myGps,dqs,dfk,ddc,dwj,yfk;
 	let center = {lng:126.5300002679,lat:45.8002383102}; 
 	let isLoad =  false;
+	console.log('map.html页面获取经纬度：',getQueryString('jd'),getQueryString('wd'));
 	let mapOptions = {
         minemapOption:{
 			domainUrl: "http://127.0.0.1:21009", /* MineMap根域名地址 */

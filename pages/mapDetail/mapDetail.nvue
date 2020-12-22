@@ -10,7 +10,7 @@
 			</view> 
 			<view class="listBox" v-if="!detail.notice_category || detail.notice_category == '1'">
 				<view class="listItem">
-					<text class="listTitle">警情编号：{{detail.police_alarm_id}}</text>
+					<text class="listTitle">警情编号：{{detail.jqbh}}</text>
 				</view>
 				<view class="listItem">
 					<text class="listTitle">报案时间：{{detail.bjsj}}</text>
@@ -29,6 +29,9 @@
 				<view class="listItem">
 					<text class="listTitle">报警内容：{{detail.bjnr}}</text>
 				</view>
+				<view class="listItem" v-if="type=='05'">
+					<text class="listTitle">反馈内容：{{detail.feedback}}</text>
+				</view>
 				<view class="listItem listbottomBorder">
 					<picker @columnchange="columnchange" @change="getChoice" mode="multiSelector" :value="value" :range="array" v-if="type=='04'">
 						<text class="listTitle">警情类别：{{jqlbMc ? jqlbMc : detail.bjlbmc}}</text> 
@@ -43,6 +46,9 @@
 				<view class="listItem">
 					<text class="listTitle">告警时间：{{detail.alarm_time}}</text>
 				</view>
+				<view class="listItem" v-if="type=='05'">
+					<text class="listTitle">反馈内容：{{detail.feedback}}</text>
+				</view>
 			</view>
 			<view class="listBox" v-if="detail.notice_category == '3'">
 				<view class="listItem">
@@ -56,6 +62,9 @@
 				</view>
 				<view class="listItem">
 					<text class="listTitle">发布时间：{{detail.fbsj}}</text>
+				</view>
+				<view class="listItem" v-if="type=='05'">
+					<text class="listTitle">反馈内容：{{detail.feedback}}</text>
 				</view>
 			</view>
 			<view class="fkTitle" v-if="type=='04'"><text class="fknr">反馈内容</text><text class="bt"> (必填)</text></view>
@@ -136,13 +145,36 @@
 				value:[],
 				jqlbMc:'',
 				JqlbBm:'',
+				time: '00:00',
+				date: getDate({
+					format: true
+				}),
+				time1: new Date().getHours() + ':' + new Date().getMinutes(),
+				date1: getDate({
+					format: true
+				}),
+				search: '',
+				startDate: getDate('start'),
+				endDate: getDate('end'),
+				params: '',
+				dataList: [],
+				checkCount: 0,
+				checkExceptionCount: 0,
+				checkToday: 0,
+				checkExceptionToady: 0,
+				radioValue: '0',
+				imgData: [], // 网络路径
+				isNotic: ''
 			}
 		},
 		onLoad:function(option){
 			this.jd = JSON.parse(option.coord)[0];
 			this.wd = JSON.parse(option.coord)[1];
 			this.type = option.type;
-			this.detail = {}
+			request('/jq/detailJq', {notice_category:option.category || '',notice_id:option.id}, "POST",  uni.getStorageSync('ip')).then(res => {
+				console.log('详情========>',res.result.policeAlarm)
+				this.detail = res.result.policeAlarm;
+			});
 			this.selectList();
 			this.getArray();
 		},
@@ -281,15 +313,24 @@
 				if(notice_category == "3"){
 					condition.notice_id = this.detail.notice_id;
 				}
+				console.log('更新状态传参====>',condition);
 				if(status == '05'){ 
-					request('/jq/feedBack', condition , "POST", uni.getStorageSync('ip')).then(res => {
+					console.log('反馈参数====>',kfPd);
+					request('/jq/feedBack', kfPd , "POST", uni.getStorageSync('ip')).then(res => {
 					// request('/jq/feedBack', searchInterface(condition, false,'6666-6666-6666-6666') , "POST", "htdz").then(res => {
-						console.log('反馈了========>',res)
-						request('/jq/updataAppstatus', condition , "POST", uni.getStorageSync('ip')).then(res => {
-						// request('/jq/updataAppstatus', searchInterface(condition, false,'7777-7777-7777-7777') , "POST", "htdz").then(res => {
-							console.log('更新状态========>',res)
-							this.back();
-						});
+						console.log('反馈了========>',res.result.reason.code)
+						if(res.result.reason.code == '200'){
+							request('/jq/updataAppstatus', condition , "POST", uni.getStorageSync('ip')).then(res => {
+							// request('/jq/updataAppstatus', searchInterface(condition, false,'7777-7777-7777-7777') , "POST", "htdz").then(res => {
+								console.log('更新状态========>',res)
+								this.back();
+							});
+						}else{
+							uni.showToast({
+								title: '反馈失败，请重新操作',
+								icon: 'none'
+							})
+						}
 					});
 				}else{
 					request('/jq/updataAppstatus', condition , "POST", uni.getStorageSync('ip')).then(res => {

@@ -18,7 +18,7 @@
 	    "path" : "pages/map/map",
 	    "style" :                                                                                    
 	    {
-	        "navigationBarTitleText": "维稳核查",
+	        "navigationBarTitleText": "合成作战",
 	        "app-plus": {
 	                    		 "titleNView": {
 	        						 "autoBackButton":false ,

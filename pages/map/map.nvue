@@ -142,6 +142,7 @@
 			}
 		},
 		onShow() {
+			this.getJqNumber();
 			if (uni.getStorageSync('userCredential')) {
 				this.userinfo = getCredential().userCredential
 			}
@@ -156,7 +157,7 @@
 				true)
 			uni.$on('isRead', (data) => {
 				this.isNotic = data;
-			})
+			});
 		},
 		onHide() {
 			if(time){
@@ -169,24 +170,7 @@
 				startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
 				endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
 			};
-			console.log('===========调用/jq/getJqStatusListCount===========')
-			request('/jq/getJqStatusListCount', condition , "POST", uni.getStorageSync('ip')).then(res => {
-			// request('/jq/getJqStatusListCount', searchInterface(condition, false,'1111-1111-1111-1111') , "POST", "htdz").then(res => {
-				console.log('进入页面类型数量res.result.list========>',res);
-					res.result.list.map((item)=>{
-						if(item.notice_status === '01'){
-							 _this.dqsNum = item.count;
-						}else if(item.notice_status === '02'){
-							 _this.yqsNum = item.count;
-						}else if(item.notice_status === '03'){
-							 _this.yddNum = item.count;
-						}else if(item.notice_status === '04'){
-							 _this.ywjNum = item.count;
-						}else if(item.notice_status === '05'){
-							 _this.yfkNum = item.count;
-						}
-					});
-			})
+			_this.getJqNumber();
 			uni.getSystemInfo({
 				success:function(res) {
 					_this.height = res.windowHeight
@@ -200,21 +184,75 @@
 			// 	}
 			// });
 			// this.blckle = option.type;
-			_this.jd = uni.getStorageSync('longitude') ? uni.getStorageSync('longitude') : 126.5300002679;
-			_this.wd = uni.getStorageSync('latitude') ? uni.getStorageSync('latitude') : 45.8002383102;
+			console.log('====执行====',uni.getStorageSync('longitude') && uni.getStorageSync('latitude'),uni.getStorageSync('longitude') ,uni.getStorageSync('latitude'))
+			if(uni.getStorageSync('longitude') && uni.getStorageSync('latitude')){
+				_this.jd = uni.getStorageSync('longitude');
+				_this.wd = uni.getStorageSync('latitude');
+			}else{
+				uni.getLocation({
+					type: 'wgs84',
+					altitude: true,
+					success: function(res) {
+						console.log('获取经纬度成功====>',res)
+						uni.setStorageSync('longitude', res.longitude);
+						uni.setStorageSync('latitude', res.latitude);
+						_this.jd = res.longitude;
+						_this.wd = res.latitude;
+					},
+				});
+			}
 			this.getMyGps();
 			this.getAllJq();
 			this.getJwt(); 
 			time = setInterval(()=>{
+				this.getJqNumber();
 				this.getJwt(); 
 				this.getAllJq();
 				this.getMyGps();
 			},10000)
 		},
 		methods: {
+			getJqNumber(){
+				let _this = this;
+				let condition = {
+					startTime: moment().format('YYYY-MM-DD') + ' 00:00:00',
+					endTime: moment().format('YYYY-MM-DD') + ' 23:59:59',
+				};
+				request('/jq/getJqStatusListCount', condition , "POST", uni.getStorageSync('ip')).then(res => {
+				// request('/jq/getJqStatusListCount', searchInterface(condition, false,'1111-1111-1111-1111') , "POST", "htdz").then(res => {
+						console.log('警情数量======>',res.result.list);
+						res.result.list.map((item)=>{
+							if(item.notice_status === '01'){
+								 _this.dqsNum = item.count;
+							}else if(item.notice_status === '02'){
+								 _this.yqsNum = item.count;
+							}else if(item.notice_status === '03'){
+								 _this.yddNum = item.count;
+							}else if(item.notice_status === '04'){
+								 _this.ywjNum = item.count;
+							}else if(item.notice_status === '05'){
+								 _this.yfkNum = item.count;
+							}
+						});
+				});
+			},
 			getMyGps(){
-				let longitude = uni.getStorageSync('longitude')
-				let latitude = uni.getStorageSync('latitude')
+				let longitude = '';
+				let latitude = '';
+				if(uni.getStorageSync('longitude') && uni.getStorageSync('latitude')){
+					longitude = uni.getStorageSync('longitude');
+					latitude = uni.getStorageSync('latitude');
+				}else{
+					uni.getLocation({
+						type: 'wgs84',
+						altitude: true,
+						success: function(res) {
+							longitude = res.longitude;
+							latitude = res.latitude;
+						},
+					});
+				}
+				console.log('MyGsp============>',longitude,,latitude)
 				let _this = this;
 				let condition = {
 					gps_time:moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -264,6 +302,7 @@
 				let id = item.notice_id;
 				let coord = JSON.stringify([item.jd,item.wd]);
 				let category = item.notice_category;
+				this.showJq = false;
 				uni.navigateTo({
 					url: `/pages/mapDetail/mapDetail?type=${type}&coord=${coord}&id=${id}&category=${category}`
 				})
