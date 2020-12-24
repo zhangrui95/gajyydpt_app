@@ -16,6 +16,7 @@
 	export default {
 		onLaunch: function() {
 			uni.setStorageSync('ip', "http://10.113.129.226:7702");
+				// uni.setStorageSync('ip', "http://192.168.104.137:7702");
 			this.upLoadGps();
 			plus.device.getInfo({
 				success: (e) => {

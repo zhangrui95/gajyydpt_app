@@ -41,9 +41,9 @@
 				if(!_this.PageStart) {
 					return false;
 				}
-				console.log('路线导航======>',res.result);
+				console.log('路线导航======>',res.result.navigation.data);
 				console.log('路线导航111======>',res.result.navigation.data.rows[0].item);
-				_this.$refs.webview.evalJs("getDh("+JSON.stringify(res.result.navigation.data.rows[0].item)+")");
+				_this.$refs.webview.evalJs("getDhfunction("+JSON.stringify(res.result.navigation.data.rows[0].item)+")");
 			});
 		},
 		methods: {

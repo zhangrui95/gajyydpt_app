@@ -58,7 +58,8 @@
 			addJqSources(list);
 		}
 	}
-	window.myGps = function(coord){
+	window.myGpsfunction = function(coord){
+		console.log('走进了coord======>',coord);
 		let coords = coord;
 		if(isLoad){
 			addMySources(coords);
@@ -74,7 +75,8 @@
 		  	dwj = HGis.makeIcon(HMap, {iconUrl: './dwj.png'});
 		  	yfk = HGis.makeIcon(HMap, {iconUrl: './yfk.png'});
 			isLoad =  true;
-			window.getDh = function(data){
+			window.getDhfunction = function(data){
+				console.log('路线======>',data);
 				let list = data;
 				if(isLoad){
 					addLine(list);
@@ -96,7 +98,7 @@
 					let coordinates = features[0].geometry.coordinates;
 					uni.postMessage({
 					      data: {
-					         action: '0',
+					         action: '01',
 							 coordinates,
 							 layer
 					      }
@@ -107,7 +109,7 @@
 				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
-		  			         action: '1',
+		  			         action: '02',
 							 coordinates,
 							 layer
 		  			      }
@@ -118,7 +120,7 @@
 				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
-		  			         action: '2',
+		  			         action: '03',
 							coordinates,
 							layer
 		  			      }
@@ -129,7 +131,7 @@
 				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
-		  			         action: '3',
+		  			         action: '04',
 							coordinates,
 							layer
 		  			      }
@@ -140,7 +142,7 @@
 				let coordinates = features[0].geometry.coordinates;
 		  			uni.postMessage({
 		  			      data: {
-		  			         action: '4',
+		  			         action: '05',
 							 coordinates,
 							 layer
 		  			      }
@@ -149,7 +151,6 @@
 		  });
 	});
 	 function addSources(data,center) {
-		 HGis.removeLayer(HMap, 'person');
 		 let markOptions = {
 			 id: 'person',
 			 data: [],
@@ -166,25 +167,39 @@
 				 },
 			 });
 		 });
-		 HGis.addMarkLayer(HMap, personGps, markOptions);
+		 const Source = HMap.map.getSource('person');
+		  if (Source) {
+		      var jsonData = HGis.buildGeoJsonData('Point', markOptions.data);
+		      Source.setData(jsonData);
+		 } else {
+		 	HGis.addMarkLayer(HMap, personGps, markOptions);
+		 }
 	}
 
 	function addMySources(coords) {
-		HGis.removeLayer(HMap,'myGps');
+		console.log('更新我的位置====>',coords);
 		let markOptions = {
-					 id: 'myGps',
-					 data: [{
-						 coordinate: coords,
-						  properties: {
-							title: '',
-						 },
-					 }],
-					 textField: 'title',
-					 iconSize:0.3,
-					 textOffset: [0, 1.5],
-					 textSize: 12,
+			 id: 'myGps',
+			 data: [{
+				 coordinate: coords,
+				  properties: {
+					title: '',
+				 },
+			 }],
+			 textField: 'title',
+			 iconSize:0.3,
+			 textOffset: [0, 1.5],
+			 textSize: 12,
 		}
-		HGis.addMarkLayer(HMap, myGps, markOptions);
+		const Source = HMap.map.getSource('myGps');
+		 if (Source) {
+		     var jsonData = HGis.buildGeoJsonData('Point', markOptions.data);
+		     Source.setData(jsonData);
+		     // HMap.map.setLayoutProperty('myGps', 'visibility', 'visible');
+		} else {
+			HGis.addMarkLayer(HMap, myGps, markOptions);
+		}
+		// HGis.setMapCenter(HMap, coords);
 	}
 	function addLine(list){
 		let pointsList = list;
@@ -193,23 +208,25 @@
 			let latlon = e.turnlatlon.split(',');
 			poitnts.push([Number(latlon[0]),Number(latlon[1])]);
 		});
-		HGis.removeLayer(HMap, 'dhlx');
-		HGis.addPolylineLayer(HMap,{
-			id:'dhlx',
-			data:[{coordinate:poitnts}],
-			lineColor:'#23bd2a',
-			lineWidth:8,
-			lineOpacity:0.7,
-			lineCap:"round",
-			lineJoin:"round"
-		});
+		console.log('导航路线poitnts========>',poitnts);
+		// HGis.removeLayer(HMap, 'dhlx');
+		const Source = HMap.map.getSource('dhlx');
+		 if (Source) {
+		     var jsonData = HGis.buildGeoJsonData('LineString', [{coordinate:poitnts}]);
+		     Source.setData(jsonData);
+		} else {
+			HGis.addPolylineLayer(HMap,{
+				id:'dhlx',
+				data:[{coordinate:poitnts}],
+				lineColor:'#23bd2a',
+				lineWidth:8,
+				lineOpacity:0.7,
+				lineCap:"round",
+				lineJoin:"round"
+			});
+		}
 	}
 	function addJqSources(list){
-		HGis.removeLayer(HMap, 'Sources0');
-		HGis.removeLayer(HMap, 'Sources1');
-		HGis.removeLayer(HMap, 'Sources2');
-		HGis.removeLayer(HMap, 'Sources3');
-		HGis.removeLayer(HMap, 'Sources4');
 		let markOptionsDqs = {
 			 id: 'Sources0',
 			 data: [],
@@ -253,7 +270,7 @@
 		list.map((item) => {
 			if(item.jd && item.wd){
 				switch(item.notice_status) {
-				     case '0':
+				     case '01':
 						   markOptionsDqs.data.push({
 							 coordinate: [item.jd,item.wd],
 							  properties: {
@@ -262,7 +279,7 @@
 							 },
 						   });
 				           break;
-				     case '1':
+				     case '02':
 				        markOptionsYqs.data.push({
 							 coordinate: [item.jd,item.wd],
 							  properties: {
@@ -271,7 +288,7 @@
 							 },
 				        });
 				        break;
-					case '2':
+					case '03':
 					   markOptionsYdd.data.push({
 							 coordinate: [item.jd,item.wd],
 							  properties: {
@@ -280,7 +297,7 @@
 							 },
 					   });
 					   break;
-				   case '3':
+				   case '04':
 					  markOptionsYwj.data.push({
 							 coordinate: [item.jd,item.wd],
 							  properties: {
@@ -289,7 +306,7 @@
 							 },
 					  });
 					  break;
-				  case '4':
+				  case '05':
 					 markOptionsYfk.data.push({
 							 coordinate: [item.jd,item.wd],
 							  properties: {
@@ -303,12 +320,24 @@
 				} 
 			}
 		});
-		HGis.addMarkLayer(HMap, dqs, markOptionsDqs);
-		HGis.addMarkLayer(HMap, dfk, markOptionsYqs);
-		HGis.addMarkLayer(HMap, ddc, markOptionsYdd);
-		HGis.addMarkLayer(HMap, dwj, markOptionsYwj);
-		HGis.addMarkLayer(HMap, yfk, markOptionsYfk);
+		getAllData(markOptionsDqs, 'Sources0', dqs);
+        getAllData(markOptionsYqs, 'Sources1', dfk);
+		getAllData(markOptionsYdd, 'Sources2', ddc);
+		getAllData(markOptionsYwj, 'Sources3', dwj);
+        getAllData(markOptionsYfk, 'Sources4', yfk);
 	}
+	function getAllData(markOptions, type, iconOption){
+		if (markOptions.data && markOptions.data.length > 0) {
+			const Source = HMap.map.getSource(type);
+			if (Source) {
+				var jsonData = HGis.buildGeoJsonData('Point', markOptions.data);
+				Source.setData(jsonData);
+				// HMap.map.setLayoutProperty(type, 'visibility', 'visible');
+			} else {
+				HGis.addMarkLayer(HMap, iconOption, markOptions);
+			}
+		}
+	};
 	function addDqsSources(image,type) {
 		let markOptions = {
 					 id: 'Sources'+ type,
